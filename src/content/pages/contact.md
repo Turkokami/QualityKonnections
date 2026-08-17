@@ -71,7 +71,7 @@ Also answerable remotely, and worth asking early: whether your project needs an 
 
 Not answerable remotely: price, on almost anything. A roof number depends on the actual slope, the number and type of penetrations, the condition of the deck underneath, access, and the system genuinely appropriate for the exposure. A dirt work number depends on how much material moves, how far it travels, what can be reused, and what the compaction specification requires.
 
-Be wary of a firm price given sight-unseen. It is not generosity. It is a number that has room built into it, or room to be revised later, and mid-project revision is the most common complaint against volume operators in this region.
+Be wary of a firm price given sight-unseen. It is not generosity. It is a number that has room built into it, or room to be revised once the work is open and you have no leverage.
 
 ## What happens on a first site visit?
 

@@ -92,7 +92,7 @@ Certification risk is the quiet one. A commercial building without windstorm cer
 
 Different things, and a good project produces both without being asked twice.
 
-An owner looks for the roof to stop leaking, the site to drain, the schedule to hold, and the number at the end to be the number at the beginning. Mid-project price revision is the complaint that damages contractors most in this market, and the defence against it is scope specificity rather than assurances.
+An owner looks for the roof to stop leaking, the site to drain, the schedule to hold, and the number at the end to be the number at the beginning. A price that moves once work is underway is corrosive to that, and the defence against it is scope specificity rather than assurances.
 
 An auditor or an insurer's reviewer looks for evidence. What system was installed, by which manufacturer, to which specification. Whether the fasteners match the substrate and the exposure. Whether inspection happened at the right stage and who performed it. Whether the warranty is registered and what it excludes. Whether the certification track was followed in the correct order.
 

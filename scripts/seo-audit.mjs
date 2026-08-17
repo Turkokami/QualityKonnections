@@ -23,6 +23,13 @@ const ALLOWED_SHARED_H2 = new Set([
   'who it applies to',
   'reach us',
   'request an estimate',
+  // Emitted by compliance/[topic].astro on every T8 page — LinkGrid and Cta
+  // headings, not body copy. Shared by construction, so they are boilerplate
+  // rather than a cannibalization signal.
+  'services this affects',
+  'markets where this bites hardest',
+  'other compliance topics',
+  'want this handled correctly the first time?',
 ]);
 
 export function run() {

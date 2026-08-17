@@ -109,7 +109,7 @@ The honest position, in the company's own terms: we may not always be the cheape
 
 What that looks like in a real estimate is scope specificity. A bid that names the manufacturer but not the membrane thickness, the fastener grade, the base course depth or the compaction specification is not cheaper than a bid that does. It is smaller. The difference reappears as a change order once the roof is open or the ground is cut, at a moment when you have no leverage and no time.
 
-Mid-project price revision is the most common complaint against volume operators in this region, and it is worth naming without naming anyone. The defence against it is not a promise. It is a scope written specifically enough that there is nothing left to revise. Deck condition handled with an agreed unit rate up front. Fastener and substrate stated. Certification responsibility assigned to a named party at a stated point in the schedule.
+A price that changes after work begins is the risk worth guarding against, and it is worth naming without naming anyone. The defence against it is not a promise. It is a scope written specifically enough that there is nothing left to revise. Deck condition handled with an agreed unit rate up front. Fastener and substrate stated. Certification responsibility assigned to a named party at a stated point in the schedule.
 
 You should also expect to be told when the cheaper answer is the right one. A localised failure on a sound roof with dry insulation underneath is a repair, and selling a replacement into that situation is how this trade lost its reputation. Where R-panel is the correct specification for an agricultural or simple residential roof, that is what gets quoted, not an upgrade to something with a better margin.
 
