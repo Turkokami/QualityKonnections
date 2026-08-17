@@ -215,4 +215,4 @@ Where a project needs an engineer, we will tell you early rather than late, beca
 
 If you want the wider context, the [compliance](/compliance/) hub explains how this track runs alongside the municipal permit and where the two diverge. The [roof replacement](/services/roof-replacement/) page walks a single job through this sequence from filing to close-out, and the [Brownsville](/locations/brownsville/) page covers what the local zone assignment means for a roof inside the city. For the specification side of what "built to pass" involves, see [services](/services/).
 
-This page states the rules as of the review date shown below and cites the primary sources it draws on. It is not legal advice, and it is not a substitute for confirming current requirements with the department or with the engineer certifying your project.
+This is not legal advice, and the page states the rules only as of the review date shown below. It is no substitute for confirming current requirements with the department, or with the engineer certifying your project.

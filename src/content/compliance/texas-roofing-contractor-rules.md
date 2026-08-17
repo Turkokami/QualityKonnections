@@ -211,4 +211,4 @@ Apply the checks on this page to us as readily as to anyone else. A contractor w
 
 For the certification process itself, see [windstorm certification](/compliance/windstorm-certification-wpi-8/), and for how zone assignment feeds the specification, see [wind zones](/compliance/seaward-vs-inland-wind-zones/). The [compliance](/compliance/) hub sets out the wider framework, [services](/services/) covers what we actually do, and [contact](/contact/) covers what an estimate needs from you.
 
-This page states the position as of the review date below and cites its sources. It is not legal advice. Confirm licensing, registration and insurance requirements with the relevant authority and with your own advisers before relying on them.
+This is not legal advice, and the page states the rules only as of the review date shown below. Confirm registration and insurance requirements with the relevant authority, and with your own advisers, before you act on them.

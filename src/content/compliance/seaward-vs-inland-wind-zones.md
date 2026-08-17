@@ -205,4 +205,4 @@ We also will not fill gaps in the published record. Where we could not verify an
 
 For how the certification process itself runs, see [windstorm certification](/compliance/windstorm-certification-wpi-8/). The [compliance](/compliance/) hub covers how this track sits alongside your municipal permit. For what zone assignment means in one specific city, the [Brownsville](/locations/brownsville/) page works it through, and [roof replacement](/services/roof-replacement/) shows how the specification follows from it on a real job.
 
-This page states the position as of the review date below and cites its sources. It is not legal advice, and zone assignments should be confirmed against the current published map before they are relied on.
+This is not legal advice, and the page states the rules only as of the review date shown below. Zone assignments should be confirmed against the currently published map before anyone builds to them.
