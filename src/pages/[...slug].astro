@@ -22,18 +22,22 @@ import { moneyServices } from '../data/services';
 import { anchorTowns } from '../data/towns';
 import { canonical } from '../lib/seo';
 
-const RESERVED = new Set([
-  '/',
-  '/services/',
-  '/locations/',
-  '/commercial/',
-  '/compliance/',
-  '/resources/',
-  '/case-studies/',
-  '/contact/',
-]);
-
 export const getStaticPaths: GetStaticPaths = async () => {
+  // Declared inside getStaticPaths deliberately. Astro evaluates getStaticPaths in
+  // an isolated scope, so a module-level const referenced only from here is dropped
+  // from the prerender chunk and throws "RESERVED is not defined" the moment the
+  // pages collection stops being empty (an empty .filter never runs its callback).
+  const RESERVED = new Set([
+    '/',
+    '/services/',
+    '/locations/',
+    '/commercial/',
+    '/compliance/',
+    '/resources/',
+    '/case-studies/',
+    '/contact/',
+  ]);
+
   const entries = await getCollection('pages', (e) => !e.data.draft);
   return entries
     .filter((e) => !RESERVED.has(canonical(e.data.path)))
