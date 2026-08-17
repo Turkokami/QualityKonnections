@@ -1,0 +1,142 @@
+---
+/**
+ * T4 — CITY PAGE. /locations/{city}/
+ * Block order: Quick Answer scoped to city → local ground & weather conditions →
+ * services in this city → neighborhoods served → community/local-proof block
+ * (Keystone Part 11 steal #1) → local proof → FAQ → city-named CTA.
+ * M3: up → /locations/, in → hub, laterally → nearest real neighbouring markets.
+ */
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import AnswerBox from '../../../components/AnswerBox.astro';
+import TrustStrip from '../../../components/TrustStrip.astro';
+import LinkGrid from '../../../components/LinkGrid.astro';
+import ExpertBlock from '../../../components/ExpertBlock.astro';
+import Faq from '../../../components/Faq.astro';
+import Cta from '../../../components/Cta.astro';
+import SourceNote from '../../../components/SourceNote.astro';
+import { getCollection, render } from 'astro:content';
+import { getTown } from '../../../data/towns';
+import {
+  buildIndex,
+  matrixLinks,
+  neighborhoodLinks,
+  siblingTownLinks,
+  caseStudyLinksFor,
+  complianceLinks,
+  serviceLinks,
+  crumbs,
+  url,
+} from '../../../lib/links';
+import { distancePhrase, windZoneSentence, soilSentence, landmarkPhrase } from '../../../lib/geo';
+import { moneyServices } from '../../../data/services';
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const entries = await getCollection('towns', (e) => !e.data.draft);
+  return entries
+    .filter((e) => {
+      const t = getTown(e.data.town);
+      return t && !t.deferred;
+    })
+    .map((entry) => ({ params: { town: entry.data.town }, props: { entry } }));
+};
+
+const { entry } = Astro.props;
+const town = getTown(entry.data.town);
+if (!town) throw new Error(`Unknown town slug: ${entry.data.town}`);
+
+const ix = await buildIndex();
+const { Content } = await render(entry);
+const d = entry.data;
+
+const matrix = matrixLinks(ix, town);
+const hoods = neighborhoodLinks(ix, town);
+const siblings = siblingTownLinks(ix, town, 6);
+const cases = caseStudyLinksFor(ix, { town: town.slug });
+const codes = complianceLinks(
+  ix,
+  town.windZone === 'not-designated'
+    ? ['fema-flood-elevation-and-pad-height', 'drainage-district-and-irrigation-canal-crossings', 'texas-roofing-contractor-rules']
+    : ['windstorm-certification-wpi-8', 'seaward-vs-inland-wind-zones', 'twia-coverage-requirements', 'fema-flood-elevation-and-pad-height']
+);
+// Fall back to the top money services when the city×service matrix isn't built yet.
+const services = matrix.length ? matrix : serviceLinks(ix, moneyServices().map((s) => s.slug));
+const landmarks = landmarkPhrase(town);
+---
+
+<BaseLayout
+  title={d.metaTitle}
+  description={d.metaDescription}
+  path={url.town(town.slug)}
+  crumbs={crumbs.town(town)}
+  quickAnswer={d.quickAnswer}
+  faqs={d.faqs}
+  kind="place"
+  serviceName={`Dirt Work & Roofing in ${town.name}, TX`}
+  areaName={town.name}
+  areaLat={town.lat}
+  areaLng={town.lng}
+  market={town.name}
+  image={d.heroImage?.src}
+  datePublished={d.datePublished}
+  dateModified={d.dateModified}
+>
+  <div class="wrap section">
+    <p class="eyebrow">{town.county} · {distancePhrase(town)}</p>
+    <h1>{d.title}</h1>
+
+    <AnswerBox answer={d.quickAnswer} />
+    <TrustStrip market={town.name} />
+
+    <section aria-labelledby="conditions">
+      <h2 id="conditions">What the ground and the weather do in {town.name}</h2>
+      <p>{soilSentence(town)}</p>
+      <p>{windZoneSentence(town)}</p>
+      <p>{town.floodContext}</p>
+      {landmarks && <p>Local reference points we work around: {landmarks}.</p>}
+    </section>
+
+    <ExpertBlock />
+
+    {
+      d.heroImage && (
+        <figure>
+          <img src={d.heroImage.src} alt={d.heroImage.alt} title={d.heroImage.title} width={d.heroImage.width} height={d.heroImage.height} fetchpriority="high" />
+          {d.heroImage.caption && <figcaption>{d.heroImage.caption}</figcaption>}
+        </figure>
+      )
+    }
+
+    <div class="prose"><Content /></div>
+
+    <LinkGrid heading={`Services in ${town.name}`} links={services} />
+    <LinkGrid
+      heading={`Neighborhoods and areas we serve in ${town.name}`}
+      links={hoods}
+      columns={false}
+    />
+
+    {
+      d.communityProof && (
+        <section aria-labelledby="community">
+          <h2 id="community">{d.communityProof.heading}</h2>
+          <p>{d.communityProof.body}</p>
+          {d.communityProof.images.map((img) => (
+            <figure>
+              <img src={img.src} alt={img.alt} title={img.title} width={img.width} height={img.height} loading="lazy" />
+              {img.caption && <figcaption>{img.caption}</figcaption>}
+            </figure>
+          ))}
+        </section>
+      )
+    }
+
+    <LinkGrid heading={`${town.name} project case studies`} links={cases} columns={false} />
+    <LinkGrid heading="Codes and permits that apply here" links={codes} columns={false} />
+    <LinkGrid heading="Nearby communities we serve" links={siblings} columns={false} />
+
+    <Faq items={d.faqs} />
+    <SourceNote sources={d.sources} reviewedDate={d.reviewedDate} />
+    <Cta market={town.name} />
+  </div>
+</BaseLayout>

@@ -1,0 +1,44 @@
+---
+/**
+ * BLOCK 2 — named-expert E-E-A-T (Keystone 4.1, Part 11 "steal" #2).
+ * A REAL credentialed person, first person, credential displayed, linked to the
+ * Person entity page. Renders nothing at all until the client confirms who it is —
+ * an invented expert is a doctrine-#6 violation, not a placeholder.
+ */
+import { BUSINESS, has } from '../data/business';
+
+interface Props {
+  /** First-person line specific to this page's topic. */
+  note?: string;
+}
+const { note } = Astro.props;
+const e = BUSINESS.expert;
+const show = has(e.name);
+const creds = BUSINESS.credentials;
+const credLine = [
+  has(creds.rcatNumber) ? `RCAT #${creds.rcatNumber}` : null,
+  has(creds.manufacturerCerts) ? creds.manufacturerCerts.join(', ') : null,
+  has(e.yearsExperience) ? `${e.yearsExperience} years in the field` : null,
+]
+  .filter(Boolean)
+  .join(' · ');
+---
+
+{
+  show && (
+    <aside class="expert">
+      {has(e.photo) && (
+        <img src={e.photo} alt={`${e.name}, ${has(e.role) ? e.role : 'Quality Konnection Construction'}`} title={String(e.name)} width="88" height="88" loading="lazy" />
+      )}
+      <div>
+        <p class="who">
+          {has(e.slug) ? <a href={`/${e.slug}/`}>{e.name}</a> : e.name}
+          {has(e.role) && <span class="cred"> — {e.role}</span>}
+        </p>
+        {credLine && <p class="cred">{credLine}</p>}
+        {note && <p style="margin-top:.6rem">{note}</p>}
+        {!note && has(e.bio) && <p style="margin-top:.6rem">{e.bio}</p>}
+      </div>
+    </aside>
+  )
+}

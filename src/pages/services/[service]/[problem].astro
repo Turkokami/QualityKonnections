@@ -1,0 +1,86 @@
+---
+/**
+ * T3 — PROBLEM MICRO PAGE. /services/{service}/{problem}/
+ * Commercial-intent, problem-aware queries. Keystone 3.4 #3: "why fire ant mounds
+ * appear after rain," not "fire ants" — here, "shingles blowing off in Gulf wind,"
+ * not "shingles."
+ */
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import AnswerBox from '../../../components/AnswerBox.astro';
+import LinkGrid from '../../../components/LinkGrid.astro';
+import ExpertBlock from '../../../components/ExpertBlock.astro';
+import Faq from '../../../components/Faq.astro';
+import Cta from '../../../components/Cta.astro';
+import SourceNote from '../../../components/SourceNote.astro';
+import { getCollection, render } from 'astro:content';
+import { getService } from '../../../data/services';
+import { buildIndex, problemLinks, serviceLinks, crumbs, url } from '../../../lib/links';
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const entries = await getCollection('problems', (e) => !e.data.draft);
+  return entries
+    .filter((e) => getService(e.data.parentService))
+    .map((entry) => ({
+      params: { service: entry.data.parentService, problem: entry.id },
+      props: { entry },
+    }));
+};
+
+const { entry } = Astro.props;
+const svc = getService(entry.data.parentService);
+if (!svc) throw new Error(`Unknown parent service: ${entry.data.parentService}`);
+
+const ix = await buildIndex();
+const { Content } = await render(entry);
+const d = entry.data;
+
+const siblingProblems = problemLinks(ix, svc).filter(
+  (l) => l.href !== url.problem(svc.slug, entry.id)
+);
+const related = serviceLinks(ix, [svc.slug, ...svc.siblings]);
+---
+
+<BaseLayout
+  title={d.metaTitle}
+  description={d.metaDescription}
+  path={url.problem(svc.slug, entry.id)}
+  crumbs={crumbs.problem(svc, d.title, entry.id)}
+  quickAnswer={d.quickAnswer}
+  faqs={d.faqs}
+  kind="article"
+  image={d.heroImage?.src}
+  datePublished={d.datePublished}
+  dateModified={d.dateModified}
+>
+  <div class="wrap-narrow section">
+    <p class="eyebrow"><a href={url.service(svc.slug)}>{svc.name}</a></p>
+    <h1>{d.title}</h1>
+
+    <AnswerBox answer={d.quickAnswer} />
+    <ExpertBlock />
+
+    {
+      d.heroImage && (
+        <figure>
+          <img src={d.heroImage.src} alt={d.heroImage.alt} title={d.heroImage.title} width={d.heroImage.width} height={d.heroImage.height} loading="lazy" />
+          {d.heroImage.caption && <figcaption>{d.heroImage.caption}</figcaption>}
+        </figure>
+      )
+    }
+
+    <div class="prose"><Content /></div>
+
+    <p class="note">
+      This page sits under <a href={url.service(svc.slug)}>{svc.name}</a>. If you want the
+      full service breakdown rather than this one problem, start there.
+    </p>
+
+    <LinkGrid heading="Related questions" links={siblingProblems} columns={false} />
+    <LinkGrid heading="Services that fix this" links={related} />
+
+    <Faq items={d.faqs} />
+    <SourceNote sources={d.sources} reviewedDate={d.reviewedDate} />
+    <Cta service={svc.name} />
+  </div>
+</BaseLayout>

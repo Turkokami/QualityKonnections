@@ -1,0 +1,23 @@
+{
+  "name": "quality-konnection-construction",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "verify": "node scripts/verify.mjs",
+    "verify:links": "node scripts/check-links.mjs",
+    "verify:seo": "node scripts/seo-audit.mjs",
+    "verify:dedup": "node scripts/dedup-scan.mjs",
+    "verify:words": "node scripts/word-count.mjs",
+    "verify:schema": "node scripts/schema-validate.mjs",
+    "verify:media": "node scripts/image-meta.mjs"
+  },
+  "dependencies": {
+    "astro": "^7.2.2",
+    "@astrojs/sitemap": "^3.7.3"
+  }
+}

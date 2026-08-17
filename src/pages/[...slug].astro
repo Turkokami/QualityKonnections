@@ -1,0 +1,85 @@
+---
+/**
+ * Authored standalone pages — /about/, /our-guarantee/, /financing/, /privacy/,
+ * and the named-expert Person page at /{expert-slug}/ (Keystone 3.3 taxonomy).
+ *
+ * Reserved paths that own a dedicated route are excluded here, so a duplicate
+ * route can never be generated. That is deliberate: two routes resolving to one
+ * URL is cannibalization by construction (Keystone 12.1).
+ */
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import AnswerBox from '../components/AnswerBox.astro';
+import TrustStrip from '../components/TrustStrip.astro';
+import LinkGrid from '../components/LinkGrid.astro';
+import ExpertBlock from '../components/ExpertBlock.astro';
+import Faq from '../components/Faq.astro';
+import Cta from '../components/Cta.astro';
+import SourceNote from '../components/SourceNote.astro';
+import { getCollection, render } from 'astro:content';
+import { buildIndex, serviceLinks, townLinks, crumbs } from '../lib/links';
+import { moneyServices } from '../data/services';
+import { anchorTowns } from '../data/towns';
+import { canonical } from '../lib/seo';
+
+const RESERVED = new Set([
+  '/',
+  '/services/',
+  '/locations/',
+  '/commercial/',
+  '/compliance/',
+  '/resources/',
+  '/case-studies/',
+  '/contact/',
+]);
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const entries = await getCollection('pages', (e) => !e.data.draft);
+  return entries
+    .filter((e) => !RESERVED.has(canonical(e.data.path)))
+    .map((entry) => ({
+      params: { slug: canonical(entry.data.path).replace(/^\/|\/$/g, '') },
+      props: { entry },
+    }));
+};
+
+const { entry } = Astro.props;
+const ix = await buildIndex();
+const { Content } = await render(entry);
+const d = entry.data;
+const path = canonical(d.path);
+---
+
+<BaseLayout
+  title={d.metaTitle}
+  description={d.metaDescription}
+  path={path}
+  crumbs={crumbs.simple(d.title, path)}
+  quickAnswer={d.quickAnswer}
+  faqs={d.faqs}
+  kind="article"
+  image={d.heroImage?.src}
+  datePublished={d.datePublished}
+  dateModified={d.dateModified}
+>
+  <div class="wrap-narrow section">
+    <h1>{d.title}</h1>
+    <AnswerBox answer={d.quickAnswer} />
+    <TrustStrip />
+    <ExpertBlock />
+    {
+      d.heroImage && (
+        <figure>
+          <img src={d.heroImage.src} alt={d.heroImage.alt} title={d.heroImage.title} width={d.heroImage.width} height={d.heroImage.height} fetchpriority="high" />
+          {d.heroImage.caption && <figcaption>{d.heroImage.caption}</figcaption>}
+        </figure>
+      )
+    }
+    <div class="prose"><Content /></div>
+    <LinkGrid heading="What we do" links={serviceLinks(ix, moneyServices().map((s) => s.slug))} />
+    <LinkGrid heading="Where we work" links={townLinks(ix, anchorTowns())} columns={false} />
+    <Faq items={d.faqs} />
+    <SourceNote sources={d.sources} reviewedDate={d.reviewedDate} />
+    <Cta />
+  </div>
+</BaseLayout>

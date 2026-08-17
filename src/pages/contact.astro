@@ -1,0 +1,138 @@
+---
+/**
+ * CONTACT — the one page whose primary action is the form.
+ *
+ * Keystone 7A: "a static site can't email — embed the client's existing CRM form
+ * so their lead tracking is preserved." Until `crmFormEmbedUrl` is supplied we do
+ * NOT ship a fake form that silently drops leads. The page falls back to the real
+ * contact channels that exist, and says plainly what is coming.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import AnswerBox from '../components/AnswerBox.astro';
+import TrustStrip from '../components/TrustStrip.astro';
+import LinkGrid from '../components/LinkGrid.astro';
+import Faq from '../components/Faq.astro';
+import { getEntry, render } from 'astro:content';
+import { BUSINESS, TERRITORY, has } from '../data/business';
+import { buildIndex, serviceLinks, townLinks, crumbs } from '../lib/links';
+import { moneyServices } from '../data/services';
+import { anchorTowns } from '../data/towns';
+import { buildTitle, buildDescription } from '../lib/seo';
+
+const ix = await buildIndex();
+const body = await getEntry('pages', 'contact');
+const rendered = body ? await render(body) : null;
+const Body = rendered?.Content;
+const fm = body?.data;
+
+const phone = has(BUSINESS.phoneE164) ? BUSINESS.phoneE164 : null;
+const phoneText = has(BUSINESS.phoneDisplay) ? BUSINESS.phoneDisplay : null;
+const email = has(BUSINESS.email) ? BUSINESS.email : null;
+const embed = has(BUSINESS.crmFormEmbedUrl) ? BUSINESS.crmFormEmbedUrl : null;
+const action = has(BUSINESS.formActionUrl) ? BUSINESS.formActionUrl : null;
+
+const quickAnswer =
+  fm?.quickAnswer ??
+  `To get an estimate from Quality Konnection Construction, tell us the property address, whether the project is dirt work or roofing, and roughly when you need it. We walk the site, look at what the ground and the roof actually need, and put the scope and the price in writing before anything starts.`;
+
+const faqs = fm?.faqs ?? [
+  { question: 'How fast can you look at my project?', answer: 'Tell us the address and the timeline and we will give you a realistic date rather than an optimistic one.' },
+  { question: 'Is the estimate free?', answer: 'Yes. Walking the site and putting the scope in writing costs you nothing.' },
+  { question: 'What should I have ready?', answer: 'The address, what you are trying to build or fix, any plans or survey you have, and your timeline. Photos help on roofing.' },
+  { question: 'Do you handle emergency roof damage?', answer: 'Call rather than use the form for anything actively leaking or storm-related, so it gets triaged instead of queued.' },
+  { question: 'Do you work with insurance claims?', answer: 'We document damage and repair it properly. We are not adjusters, and we will not tell you what your policy covers.' },
+  { question: 'What areas do you cover?', answer: `Cameron County, Willacy County and eastern Hidalgo County — anchored in ${TERRITORY.anchors.join(', ')}.` },
+];
+
+const title = buildTitle('Contact & Free Estimates | Quality Konnection');
+const description = buildDescription(
+  'Request a free dirt work or roofing estimate for property in Brownsville, Port Isabel, South Padre Island or anywhere on the South Texas Gulf Coast.',
+  'Get in touch today.'
+);
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  path="/contact/"
+  crumbs={crumbs.simple('Contact', '/contact/')}
+  quickAnswer={quickAnswer}
+  faqs={faqs}
+  kind="page"
+  areaName={TERRITORY.primaryCity}
+  areaLat={TERRITORY.centroid.lat}
+  areaLng={TERRITORY.centroid.lng}
+>
+  <div class="wrap-narrow section">
+    <h1>Get a Free Estimate</h1>
+    <AnswerBox answer={quickAnswer} />
+    <TrustStrip />
+
+    <section aria-labelledby="reach">
+      <h2 id="reach">Reach us</h2>
+      <ul>
+        {phone && phoneText && <li><strong>Phone:</strong> <a href={`tel:${phone}`}>{phoneText}</a></li>}
+        {email && <li><strong>Email:</strong> <a href={`mailto:${email}`}>{email}</a></li>}
+        {
+          has(BUSINESS.address.city) && (
+            <li>
+              <strong>Office:</strong>{' '}
+              <address style="display:inline;font-style:normal">
+                {BUSINESS.address.street} {BUSINESS.address.street2} {BUSINESS.address.city}, {BUSINESS.address.region} {BUSINESS.address.postalCode}
+              </address>
+            </li>
+          )
+        }
+      </ul>
+      {
+        !phone && !email && (
+          <p class="note">
+            Phone and email are being finalised for publication. Nothing is listed
+            here that has not been confirmed — we would rather show you no number
+            than the wrong one.
+          </p>
+        )
+      }
+    </section>
+
+    {
+      embed ? (
+        <section aria-labelledby="form">
+          <h2 id="form">Request an estimate</h2>
+          <iframe
+            src={embed}
+            title="Request an estimate from Quality Konnection Construction"
+            style="width:100%;min-height:760px;border:1px solid var(--border);border-radius:8px"
+            loading="lazy"
+          />
+        </section>
+      ) : action ? (
+        <section aria-labelledby="form">
+          <h2 id="form">Request an estimate</h2>
+          <form method="POST" action={action} style="display:grid;gap:1rem;max-width:36rem">
+            <label>Name<input name="name" required autocomplete="name" style="width:100%;padding:.7rem;border:1px solid var(--border);border-radius:4px" /></label>
+            <label>Phone<input name="phone" type="tel" required autocomplete="tel" style="width:100%;padding:.7rem;border:1px solid var(--border);border-radius:4px" /></label>
+            <label>Email<input name="email" type="email" autocomplete="email" style="width:100%;padding:.7rem;border:1px solid var(--border);border-radius:4px" /></label>
+            <label>Property address<input name="address" required style="width:100%;padding:.7rem;border:1px solid var(--border);border-radius:4px" /></label>
+            <label>What do you need?<select name="scope" style="width:100%;padding:.7rem;border:1px solid var(--border);border-radius:4px"><option>Dirt work / site preparation</option><option>Roofing</option><option>Both</option><option>Not sure yet</option></select></label>
+            <label>Tell us about the project<textarea name="details" rows="5" style="width:100%;padding:.7rem;border:1px solid var(--border);border-radius:4px"></textarea></label>
+            <button class="btn btn-primary" type="submit">Request my estimate</button>
+          </form>
+        </section>
+      ) : (
+        <p class="note">
+          <strong>Estimate request form:</strong> this will embed Quality Konnection’s
+          own CRM intake form so every lead lands in the system the office already
+          uses. Until that embed URL is supplied, no form is shown here — a form that
+          silently drops leads is worse than no form.
+        </p>
+      )
+    }
+
+    {Body && <div class="prose"><Body /></div>}
+
+    <LinkGrid heading="What we do" links={serviceLinks(ix, moneyServices().map((s) => s.slug))} />
+    <LinkGrid heading="Where we work" links={townLinks(ix, anchorTowns())} columns={false} />
+    <Faq items={faqs} />
+  </div>
+</BaseLayout>

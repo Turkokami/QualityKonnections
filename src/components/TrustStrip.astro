@@ -1,0 +1,44 @@
+---
+/**
+ * Trust strip near the hero (Keystone 1.1 #2 and #5 — trust rhythm).
+ *
+ * Keystone doctrine #6: EVERY claim here is either a positioning statement the
+ * client made in their own brief, or a pending-guarded real credential. No
+ * invented years-in-business, job counts, review counts, ratings or awards.
+ */
+import { BUSINESS, has } from '../data/business';
+
+interface Props {
+  market?: string;
+}
+const { market } = Astro.props;
+
+type Item = { label: string };
+const items: Item[] = [];
+
+// From the client's own brief — safe to state.
+items.push({ label: 'Dirt work and roofing under one contractor' });
+items.push({ label: market ? `Serving ${market} and the Rio Grande Valley` : 'Serving the South Texas Gulf Coast' });
+
+// Real credentials only, and only once confirmed.
+if (has(BUSINESS.credentials.rcatNumber)) items.push({ label: 'RCAT-certified roofing contractor' });
+if (has(BUSINESS.credentials.generalLiability)) items.push({ label: 'Insured — certificate on request' });
+if (has(BUSINESS.credentials.manufacturerCerts))
+  items.push({ label: `${BUSINESS.credentials.manufacturerCerts[0]} certified` });
+if (has(BUSINESS.foundingYear)) items.push({ label: `Working in the Valley since ${BUSINESS.foundingYear}` });
+if (has(BUSINESS.warranty.workmanshipTerm))
+  items.push({ label: BUSINESS.warranty.workmanshipTerm });
+if (has(BUSINESS.emergencyService) && BUSINESS.emergencyService)
+  items.push({ label: 'Storm response available' });
+---
+
+<ul class="trust">
+  {
+    items.map((i) => (
+      <li>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+        {i.label}
+      </li>
+    ))
+  }
+</ul>

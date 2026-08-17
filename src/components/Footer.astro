@@ -1,0 +1,125 @@
+---
+/**
+ * Footer. Carries the sitewide "in to the hub" half of the M3 lattice, plus the
+ * single canonical NAP block. Keystone 6.3: boilerplate lives in components, not
+ * in page bodies — that is what keeps the duplicate-sentence scanner clean.
+ *
+ * Every field is pending-guarded. Nothing here invents a number or an address.
+ */
+import { BUSINESS, BRAND_IMAGES, TERRITORY, has } from '../data/business';
+import { DIVISIONS, byDivision } from '../data/services';
+import { buildIndex, serviceLinks, url } from '../lib/links';
+import { canonical } from '../lib/seo';
+
+// Content-gated, exactly like every other link emitter (M3). The footer renders on
+// all ~190 pages, so an ungated link here would multiply into ~190 dead links —
+// which is precisely what the crawler caught the first time this file shipped.
+const ix = await buildIndex();
+const authored = new Set(ix.pages.map((p) => canonical(p.data.path)));
+const hasPage = (p: string) => authored.has(canonical(p));
+
+const COMPANY = [
+  { href: url.about(), label: 'About', gate: () => hasPage(url.about()) },
+  { href: url.locationsHub(), label: 'Service areas', gate: () => true },
+  { href: url.commercialHub(), label: 'Commercial', gate: () => true },
+  { href: url.complianceHub(), label: 'Codes & compliance', gate: () => true },
+  { href: url.libraryHub(), label: 'Resources', gate: () => true },
+  { href: url.caseStudiesHub(), label: 'Project case studies', gate: () => true },
+  { href: url.guarantee(), label: 'Our guarantee', gate: () => hasPage(url.guarantee()) },
+  { href: url.financing(), label: 'Financing', gate: () => hasPage(url.financing()) },
+  { href: url.contact(), label: 'Contact', gate: () => true },
+].filter((l) => l.gate());
+
+const year = 2026;
+const phone = has(BUSINESS.phoneE164) ? BUSINESS.phoneE164 : null;
+const phoneText = has(BUSINESS.phoneDisplay) ? BUSINESS.phoneDisplay : null;
+const addr = BUSINESS.address;
+const hasAddress = has(addr.street) && has(addr.city) && has(addr.postalCode);
+const socials = Object.entries(BUSINESS.social).filter(([, v]) => has(v));
+
+const dirt = serviceLinks(ix, byDivision('dirt-work').filter((s) => s.money).map((s) => s.slug)).slice(0, 6);
+const roof = serviceLinks(ix, byDivision('roofing').filter((s) => s.money).map((s) => s.slug)).slice(0, 6);
+---
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <img
+          src={BRAND_IMAGES.logo.src}
+          alt={BRAND_IMAGES.logo.alt}
+          title={BRAND_IMAGES.logo.alt}
+          width={BRAND_IMAGES.logo.width}
+          height={BRAND_IMAGES.logo.height}
+          style="height:32px;width:auto;margin-bottom:1rem"
+          loading="lazy"
+        />
+        <p style="margin-bottom:.75rem">{BUSINESS.tagline}</p>
+        <p style="font-size:.88rem">
+          Serving {TERRITORY.anchors.join(', ')} and {TERRITORY.regionLabel}.
+        </p>
+      </div>
+
+      <div>
+        <h3>{DIVISIONS['dirt-work'].short}</h3>
+        <ul>
+          {dirt.map((s) => <li><a href={s.href}>{s.label}</a></li>)}
+          <li><a href="/services/">All services</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h3>{DIVISIONS.roofing.short}</h3>
+        <ul>
+          {roof.map((s) => <li><a href={s.href}>{s.label}</a></li>)}
+          <li><a href="/services/">All services</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h3>Company</h3>
+        <ul>
+          {COMPANY.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+        </ul>
+      </div>
+
+      <div>
+        <h3>Contact</h3>
+        <ul>
+          {phone && phoneText && <li><a href={`tel:${phone}`}>{phoneText}</a></li>}
+          {has(BUSINESS.email) && <li><a href={`mailto:${BUSINESS.email}`}>{BUSINESS.email}</a></li>}
+          {
+            hasAddress && (
+              <li style="margin-top:.6rem">
+                <address style="font-style:normal;line-height:1.6">
+                  {addr.street}<br />
+                  {addr.street2 && <>{addr.street2}<br /></>}
+                  {addr.city}, {addr.region} {addr.postalCode}
+                </address>
+              </li>
+            )
+          }
+          {!phone && <li><a href="/contact/">Request an estimate</a></li>}
+        </ul>
+        {
+          socials.length > 0 && (
+            <ul style="display:flex;gap:1rem;margin-top:1rem">
+              {socials.map(([k, v]) => (
+                <li><a href={String(v)} rel="noopener">{k[0]!.toUpperCase() + k.slice(1)}</a></li>
+              ))}
+            </ul>
+          )
+        }
+      </div>
+    </div>
+
+    <p class="colophon">
+      © {year} {BUSINESS.name}. {BUSINESS.positioning}
+      {has(BUSINESS.credentials.texasEntityNumber) && <> · TX entity {BUSINESS.credentials.texasEntityNumber}</>}
+      <br />
+      {hasPage(url.guarantee()) && <><a href={url.guarantee()}>Guarantee terms</a> · </>}
+      {hasPage('/privacy/') && <><a href="/privacy/">Privacy</a> · </>}
+      <a href="/sitemap-index.xml">Sitemap</a>
+    </p>
+  </div>
+</footer>

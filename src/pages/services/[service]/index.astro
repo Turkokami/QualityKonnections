@@ -1,0 +1,120 @@
+---
+/**
+ * T2 — SERVICE SPOKE. /services/{service}/
+ * Content-gated: enumerated from the content layer, so a service with no
+ * 3,000-word body simply has no page (M1, Keystone 6.3).
+ * M3 wiring: up → /services/, in → hub, laterally → sibling services + problems.
+ */
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import AnswerBox from '../../../components/AnswerBox.astro';
+import TrustStrip from '../../../components/TrustStrip.astro';
+import LinkGrid from '../../../components/LinkGrid.astro';
+import ExpertBlock from '../../../components/ExpertBlock.astro';
+import Faq from '../../../components/Faq.astro';
+import Cta from '../../../components/Cta.astro';
+import SourceNote from '../../../components/SourceNote.astro';
+import { getCollection, render } from 'astro:content';
+import { getService } from '../../../data/services';
+import { anchorTowns } from '../../../data/towns';
+import {
+  buildIndex,
+  serviceLinks,
+  problemLinks,
+  libraryLinksFor,
+  caseStudyLinksFor,
+  matrixLinks,
+  crumbs,
+  url,
+} from '../../../lib/links';
+import { TERRITORY } from '../../../data/business';
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const entries = await getCollection('services', (e) => !e.data.draft);
+  return entries
+    .filter((e) => getService(e.data.service))
+    .map((entry) => ({ params: { service: entry.data.service }, props: { entry } }));
+};
+
+const { entry } = Astro.props;
+const svc = getService(entry.data.service);
+if (!svc) throw new Error(`Unknown service slug: ${entry.data.service}`);
+
+const ix = await buildIndex();
+const { Content } = await render(entry);
+const d = entry.data;
+
+const siblings = serviceLinks(ix, svc.siblings);
+const problems = problemLinks(ix, svc);
+const library = libraryLinksFor(ix, svc.slug);
+const cases = caseStudyLinksFor(ix, { service: svc.slug });
+
+// City × service links that exist for this service, across anchor markets.
+const hasGuaranteePage = ix.pages.some(
+  (p) => p.data.path.replace(/\/+$/, '') === '/our-guarantee'
+);
+
+const cityLinks = anchorTowns()
+  .filter((t) => ix.matrixSet.has(`${t.slug}--${svc.slug}`))
+  .map((t) => ({ href: url.matrix(t.slug, svc.slug), label: `${svc.navLabel} in ${t.name}` }));
+---
+
+<BaseLayout
+  title={d.metaTitle}
+  description={d.metaDescription}
+  path={url.service(svc.slug)}
+  crumbs={crumbs.service(svc)}
+  quickAnswer={d.quickAnswer}
+  faqs={d.faqs}
+  kind="service"
+  serviceName={svc.name}
+  serviceType={svc.serviceType}
+  image={d.heroImage?.src}
+  datePublished={d.datePublished}
+  dateModified={d.dateModified}
+>
+  <div class="wrap section">
+    <p class="eyebrow">{svc.division === 'roofing' ? 'Roofing' : 'Dirt Work & Site Prep'}</p>
+    <h1>{d.title}</h1>
+
+    <AnswerBox answer={d.quickAnswer} />
+    <TrustStrip />
+    <ExpertBlock />
+
+    {
+      d.heroImage && (
+        <figure>
+          <img
+            src={d.heroImage.src}
+            alt={d.heroImage.alt}
+            title={d.heroImage.title}
+            width={d.heroImage.width}
+            height={d.heroImage.height}
+            fetchpriority="high"
+          />
+          {d.heroImage.caption && <figcaption>{d.heroImage.caption}</figcaption>}
+        </figure>
+      )
+    }
+
+    <div class="prose"><Content /></div>
+
+    <LinkGrid heading="Common problems we solve" links={problems} />
+    <LinkGrid heading="Reference &amp; materials" links={library} columns={false} />
+    <LinkGrid heading="Project case studies" links={cases} columns={false} />
+    <LinkGrid heading={`${svc.navLabel} by city`} links={cityLinks} columns={false} />
+    <LinkGrid heading="Related services" links={siblings} />
+
+    {
+      /* Content-gated like every other link in the lattice: /our-guarantee/ is an
+         authored page, so the link is only emitted once that body exists. */
+      hasGuaranteePage && (
+        <p><a href={url.guarantee()}>How our workmanship guarantee is defined →</a></p>
+      )
+    }
+
+    <Faq items={d.faqs} />
+    <SourceNote sources={d.sources} reviewedDate={d.reviewedDate} />
+    <Cta service={svc.name} market={TERRITORY.primaryCity} />
+  </div>
+</BaseLayout>

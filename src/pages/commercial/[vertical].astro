@@ -1,0 +1,92 @@
+---
+/** T7 — INDUSTRY VERTICAL. /commercial/{vertical}/ */
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AnswerBox from '../../components/AnswerBox.astro';
+import TrustStrip from '../../components/TrustStrip.astro';
+import LinkGrid from '../../components/LinkGrid.astro';
+import ExpertBlock from '../../components/ExpertBlock.astro';
+import Faq from '../../components/Faq.astro';
+import Cta from '../../components/Cta.astro';
+import SourceNote from '../../components/SourceNote.astro';
+import { getCollection, render } from 'astro:content';
+import { getVertical } from '../../data/verticals';
+import { getTown } from '../../data/towns';
+import {
+  buildIndex,
+  serviceLinks,
+  verticalLinks,
+  townLinks,
+  caseStudyLinksFor,
+  crumbs,
+  url,
+} from '../../lib/links';
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const entries = await getCollection('verticals', (e) => !e.data.draft);
+  return entries
+    .filter((e) => getVertical(e.data.vertical))
+    .map((entry) => ({ params: { vertical: entry.data.vertical }, props: { entry } }));
+};
+
+const { entry } = Astro.props;
+const v = getVertical(entry.data.vertical);
+if (!v) throw new Error(`Unknown vertical: ${entry.data.vertical}`);
+
+const ix = await buildIndex();
+const { Content } = await render(entry);
+const d = entry.data;
+
+const markets = townLinks(
+  ix,
+  v.markets.map((m) => getTown(m)).filter((t): t is NonNullable<typeof t> => !!t)
+);
+const others = verticalLinks(ix).filter((l) => l.href !== url.vertical(v.slug));
+---
+
+<BaseLayout
+  title={d.metaTitle}
+  description={d.metaDescription}
+  path={url.vertical(v.slug)}
+  crumbs={crumbs.child('Commercial', '/commercial/', v.name, url.vertical(v.slug))}
+  quickAnswer={d.quickAnswer}
+  faqs={d.faqs}
+  kind="service"
+  serviceName={v.name}
+  serviceType={v.name}
+  image={d.heroImage?.src}
+  datePublished={d.datePublished}
+  dateModified={d.dateModified}
+>
+  <div class="wrap section">
+    <p class="eyebrow"><a href="/commercial/">Commercial</a></p>
+    <h1>{d.title}</h1>
+    <AnswerBox answer={d.quickAnswer} />
+    <TrustStrip />
+
+    <section aria-labelledby="stake">
+      <h2 id="stake">What is actually at stake</h2>
+      <p>{v.stake}</p>
+    </section>
+
+    <ExpertBlock />
+    {
+      d.heroImage && (
+        <figure>
+          <img src={d.heroImage.src} alt={d.heroImage.alt} title={d.heroImage.title} width={d.heroImage.width} height={d.heroImage.height} fetchpriority="high" />
+          {d.heroImage.caption && <figcaption>{d.heroImage.caption}</figcaption>}
+        </figure>
+      )
+    }
+    <div class="prose"><Content /></div>
+
+    <LinkGrid heading="Services this work draws on" links={serviceLinks(ix, v.services)} />
+    <LinkGrid heading="Case studies" links={caseStudyLinksFor(ix, {})} columns={false} />
+    <LinkGrid heading="Markets where we do this work" links={markets} columns={false} />
+    <LinkGrid heading="Other property types" links={others} />
+
+    <Faq items={d.faqs} />
+    <SourceNote sources={d.sources} reviewedDate={d.reviewedDate} />
+    <Cta heading={`Planning ${v.navLabel.toLowerCase()} work?`} />
+  </div>
+</BaseLayout>

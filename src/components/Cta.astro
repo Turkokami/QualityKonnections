@@ -1,0 +1,43 @@
+---
+/**
+ * BLOCK 6 — the location-specific CTA. Keystone 4.1: "named to the page's
+ * market, not a generic sitewide banner." Passing `market` is how a city page
+ * satisfies that gate item.
+ * Keystone 6.3: this prose lives in a component, never in page bodies — it is
+ * exactly the repeated boilerplate the duplicate-sentence scanner would flag.
+ */
+import { BUSINESS, has } from '../data/business';
+
+interface Props {
+  market?: string;
+  service?: string;
+  heading?: string;
+  body?: string;
+}
+const { market, service, heading, body } = Astro.props;
+
+const where = market ? ` in ${market}` : '';
+const what = service ? service.toLowerCase() : 'dirt work or roofing';
+const phone = has(BUSINESS.phoneE164) ? BUSINESS.phoneE164 : null;
+const phoneText = has(BUSINESS.phoneDisplay) ? BUSINESS.phoneDisplay : null;
+
+const h = heading ?? `Need ${what}${where}?`;
+const p =
+  body ??
+  `Tell us what the project is and where it sits. We will walk the site, tell you what it actually needs, and put it in writing.`;
+---
+
+<section class="cta">
+  <h2>{h}</h2>
+  <p>{p}</p>
+  <div class="cta-actions">
+    {
+      phone && phoneText ? (
+        <a class="btn btn-primary" href={`tel:${phone}`} data-cta="call">Call {phoneText}</a>
+      ) : null
+    }
+    <a class="btn btn-on-dark" href="/contact/" data-cta="quote">
+      {market ? `Request a ${market} estimate` : 'Request an estimate'}
+    </a>
+  </div>
+</section>

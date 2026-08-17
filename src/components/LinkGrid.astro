@@ -1,0 +1,44 @@
+---
+/**
+ * The lattice renderer (M3). Takes gated links from src/lib/links.ts and renders
+ * nothing when the list is empty — which is how the site can grow in content
+ * waves without ever emitting a dead link or an empty section heading.
+ */
+import type { Link } from '../lib/links';
+
+interface Props {
+  heading?: string;
+  intro?: string;
+  links: Link[];
+  columns?: boolean;
+  id?: string;
+}
+const { heading, intro, links, columns = true, id } = Astro.props;
+---
+
+{
+  links.length > 0 && (
+    <section id={id}>
+      {heading && <h2>{heading}</h2>}
+      {intro && <p>{intro}</p>}
+      {columns ? (
+        <ul class="grid">
+          {links.map((l) => (
+            <li>
+              <a class="card" href={l.href}>
+                <strong>{l.label}</strong>
+                {l.note && <span>{l.note}</span>}
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <ul>
+          {links.map((l) => (
+            <li><a href={l.href}>{l.label}</a></li>
+          ))}
+        </ul>
+      )}
+    </section>
+  )
+}

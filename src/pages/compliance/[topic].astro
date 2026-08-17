@@ -1,0 +1,81 @@
+---
+/**
+ * T8 — COMPLIANCE PAGE. /compliance/{topic}/
+ * Block order: the rule stated plainly → who it applies to → obligations →
+ * penalties → how we help → source citation and review date → FAQ.
+ * The source citation and review date are SCHEMA-REQUIRED here (content.config.ts),
+ * and the hard-boundary line is rendered on every page so the site can never imply
+ * an authority the company does not hold (Keystone Part 14).
+ */
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AnswerBox from '../../components/AnswerBox.astro';
+import LinkGrid from '../../components/LinkGrid.astro';
+import ExpertBlock from '../../components/ExpertBlock.astro';
+import Faq from '../../components/Faq.astro';
+import Cta from '../../components/Cta.astro';
+import SourceNote from '../../components/SourceNote.astro';
+import { getCollection, render } from 'astro:content';
+import { getCompliance } from '../../data/compliance';
+import { getTown } from '../../data/towns';
+import { buildIndex, serviceLinks, complianceLinks, townLinks, crumbs, url } from '../../lib/links';
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const entries = await getCollection('compliance', (e) => !e.data.draft);
+  return entries
+    .filter((e) => getCompliance(e.data.topic))
+    .map((entry) => ({ params: { topic: entry.data.topic }, props: { entry } }));
+};
+
+const { entry } = Astro.props;
+const c = getCompliance(entry.data.topic);
+if (!c) throw new Error(`Unknown compliance topic: ${entry.data.topic}`);
+
+const ix = await buildIndex();
+const { Content } = await render(entry);
+const d = entry.data;
+
+const markets = townLinks(
+  ix,
+  c.markets.map((m) => getTown(m)).filter((t): t is NonNullable<typeof t> => !!t)
+);
+const others = complianceLinks(ix).filter((l) => l.href !== url.compliance(c.slug));
+---
+
+<BaseLayout
+  title={d.metaTitle}
+  description={d.metaDescription}
+  path={url.compliance(c.slug)}
+  crumbs={crumbs.child('Codes & Compliance', '/compliance/', c.navLabel, url.compliance(c.slug))}
+  quickAnswer={d.quickAnswer}
+  faqs={d.faqs}
+  kind="article"
+  image={d.heroImage?.src}
+  datePublished={d.datePublished}
+  dateModified={d.dateModified}
+>
+  <div class="wrap-narrow section">
+    <p class="eyebrow"><a href="/compliance/">Codes &amp; compliance</a></p>
+    <h1>{d.title}</h1>
+
+    <AnswerBox answer={d.quickAnswer} />
+
+    <section aria-labelledby="rule">
+      <h2 id="rule">The rule, stated plainly</h2>
+      <p>{c.rule}</p>
+      <h2>Who it applies to</h2>
+      <p>{c.appliesTo}</p>
+    </section>
+
+    <ExpertBlock />
+    <div class="prose"><Content /></div>
+
+    <LinkGrid heading="Services this affects" links={serviceLinks(ix, c.services)} />
+    <LinkGrid heading="Markets where this bites hardest" links={markets} columns={false} />
+    <LinkGrid heading="Other compliance topics" links={others} columns={false} />
+
+    <Faq items={d.faqs} />
+    <SourceNote sources={d.sources} reviewedDate={d.reviewedDate} boundary={c.boundary} />
+    <Cta heading="Want this handled correctly the first time?" />
+  </div>
+</BaseLayout>

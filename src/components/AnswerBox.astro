@@ -1,0 +1,18 @@
+---
+/**
+ * BLOCK 1 — the AEO Quick Answer (Keystone 1.1 #3, 4.1).
+ * 40–60 words at the very top of every page, written to be quoted verbatim and
+ * spoken aloud. `data-speakable` is the M4 hook the SpeakableSpecification
+ * cssSelector points at — do not rename it without updating src/lib/schema.ts.
+ */
+interface Props {
+  question?: string;
+  answer: string;
+}
+const { question, answer } = Astro.props;
+---
+
+<div class="answer" data-speakable>
+  <h2>{question ?? 'The short answer'}</h2>
+  <p>{answer}</p>
+</div>

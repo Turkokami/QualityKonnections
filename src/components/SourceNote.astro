@@ -1,0 +1,36 @@
+---
+/**
+ * T8 requirement: factual/legal claims carry a source citation AND a visible
+ * review date (Keystone 4.2, 9.1). Also carries the hard-boundary disclaimer so
+ * a compliance page can never imply an authority the company does not hold
+ * (Keystone Part 14).
+ */
+interface Props {
+  sources: { name: string; url: string; accessed: string }[];
+  reviewedDate?: string;
+  boundary?: string;
+}
+const { sources, reviewedDate, boundary } = Astro.props;
+---
+
+{
+  (sources.length > 0 || reviewedDate || boundary) && (
+    <div class="source-line">
+      {boundary && <p><strong>Scope of this page:</strong> {boundary}</p>}
+      {
+        sources.length > 0 && (
+          <p>
+            <strong>Sources:</strong>{' '}
+            {sources.map((s, i) => (
+              <>
+                {i > 0 && ' · '}
+                <a href={s.url} rel="nofollow noopener">{s.name}</a>
+              </>
+            ))}
+          </p>
+        )
+      }
+      {reviewedDate && <p>Reviewed {reviewedDate}. Rules change — confirm current requirements with the issuing authority before relying on this page.</p>}
+    </div>
+  )
+}

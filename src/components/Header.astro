@@ -1,0 +1,57 @@
+---
+/**
+ * Site header. M7: the logo renders on every page with alt = business name.
+ * Nav is curated deliberately — never auto-generated from the page tree
+ * (the WordPress `auto_add` failure, Keystone 7B, has a static equivalent:
+ * a nav that maps over every route and balloons as content lands).
+ */
+import { BUSINESS, BRAND_IMAGES, has } from '../data/business';
+import { buildIndex } from '../lib/links';
+import { canonical } from '../lib/seo';
+
+// Content-gated. The nav renders on every page, so an ungated entry becomes one
+// dead link per page across the whole site.
+const ix = await buildIndex();
+const authored = new Set(ix.pages.map((p) => canonical(p.data.path)));
+
+const NAV = [
+  { href: '/services/', label: 'Services', always: true },
+  { href: '/locations/', label: 'Service Areas', always: true },
+  { href: '/commercial/', label: 'Commercial', always: true },
+  { href: '/compliance/', label: 'Codes & Compliance', always: true },
+  { href: '/resources/', label: 'Resources', always: true },
+  { href: '/about/', label: 'About', always: false },
+].filter((n) => n.always || authored.has(canonical(n.href)));
+const phone = has(BUSINESS.phoneE164) ? BUSINESS.phoneE164 : null;
+const phoneText = has(BUSINESS.phoneDisplay) ? BUSINESS.phoneDisplay : null;
+---
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a href="/" aria-label={`${BUSINESS.name} home`} style="display:flex;align-items:center;gap:.6rem">
+      <img
+        src={BRAND_IMAGES.logo.src}
+        alt={BRAND_IMAGES.logo.alt}
+        title={BRAND_IMAGES.logo.alt}
+        width={BRAND_IMAGES.logo.width}
+        height={BRAND_IMAGES.logo.height}
+        style="height:34px;width:auto"
+      />
+    </a>
+
+    <nav class="site-nav" aria-label="Primary">
+      {NAV.map((n) => <a href={n.href}>{n.label}</a>)}
+      {
+        phone && phoneText ? (
+          <a href={`tel:${phone}`} class="btn btn-primary" style="min-height:42px;padding:.5rem 1rem">
+            {phoneText}
+          </a>
+        ) : (
+          <a href="/contact/" class="btn btn-primary" style="min-height:42px;padding:.5rem 1rem">
+            Free Estimate
+          </a>
+        )
+      }
+    </nav>
+  </div>
+</header>

@@ -1,0 +1,95 @@
+---
+/**
+ * T9 — CASE STUDY. Honest schema only: CreativeWork with no fabricated ratings,
+ * dates or statistics (Keystone Appendix H, doctrine #6).
+ * Wired UP to the service spoke, IN to the hub, and LATERALLY to the city page.
+ */
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AnswerBox from '../../components/AnswerBox.astro';
+import LinkGrid from '../../components/LinkGrid.astro';
+import ExpertBlock from '../../components/ExpertBlock.astro';
+import Faq from '../../components/Faq.astro';
+import Cta from '../../components/Cta.astro';
+import SourceNote from '../../components/SourceNote.astro';
+import { getCollection, render } from 'astro:content';
+import { getTown } from '../../data/towns';
+import { getService } from '../../data/services';
+import { buildIndex, serviceLinks, townLinks, caseStudyLinksFor, crumbs, url } from '../../lib/links';
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const entries = await getCollection('casestudies', (e) => !e.data.draft);
+  return entries.map((entry) => ({ params: { study: entry.id }, props: { entry } }));
+};
+
+const { entry } = Astro.props;
+const ix = await buildIndex();
+const { Content } = await render(entry);
+const d = entry.data;
+const town = getTown(d.town);
+const svc = getService(d.service);
+
+const related = caseStudyLinksFor(ix, {}).filter((l) => l.href !== url.caseStudy(entry.id));
+---
+
+<BaseLayout
+  title={d.metaTitle}
+  description={d.metaDescription}
+  path={url.caseStudy(entry.id)}
+  crumbs={crumbs.child('Case Studies', '/case-studies/', d.title, url.caseStudy(entry.id))}
+  quickAnswer={d.quickAnswer}
+  faqs={d.faqs}
+  kind="casestudy"
+  areaName={town?.name}
+  areaLat={town?.lat}
+  areaLng={town?.lng}
+  market={town?.name}
+  image={d.heroImage?.src}
+  datePublished={d.datePublished}
+  dateModified={d.dateModified}
+>
+  <div class="wrap-narrow section">
+    <p class="eyebrow"><a href="/case-studies/">Case study</a></p>
+    <h1>{d.title}</h1>
+
+    <AnswerBox answer={d.quickAnswer} />
+
+    <table>
+      <tbody>
+        <tr><th scope="row">Property type</th><td>{d.propertyType}</td></tr>
+        {town && <tr><th scope="row">Market</th><td><a href={url.town(town.slug)}>{town.name}, TX</a></td></tr>}
+        {svc && <tr><th scope="row">Service</th><td><a href={url.service(svc.slug)}>{svc.name}</a></td></tr>}
+        <tr><th scope="row">Method</th><td>{d.method}</td></tr>
+        <tr><th scope="row">Outcome</th><td>{d.outcome}</td></tr>
+      </tbody>
+    </table>
+
+    <ExpertBlock />
+    {
+      d.heroImage && (
+        <figure>
+          <img src={d.heroImage.src} alt={d.heroImage.alt} title={d.heroImage.title} width={d.heroImage.width} height={d.heroImage.height} fetchpriority="high" />
+          {d.heroImage.caption && <figcaption>{d.heroImage.caption}</figcaption>}
+        </figure>
+      )
+    }
+    <div class="prose"><Content /></div>
+
+    {
+      !d.clientNamePermitted && (
+        <p class="note">
+          The client and exact address are withheld. We do not publish a name,
+          address or identifiable photograph without written permission.
+        </p>
+      )
+    }
+
+    <LinkGrid heading="The service behind this project" links={serviceLinks(ix, svc ? [svc.slug, ...svc.siblings] : [])} />
+    <LinkGrid heading="This market" links={townLinks(ix, town ? [town] : [])} columns={false} />
+    <LinkGrid heading="Other case studies" links={related} columns={false} />
+
+    <Faq items={d.faqs} />
+    <SourceNote sources={d.sources} reviewedDate={d.reviewedDate} />
+    <Cta market={town?.name} service={svc?.name} />
+  </div>
+</BaseLayout>

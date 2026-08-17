@@ -1,0 +1,92 @@
+---
+/**
+ * GEO HUB — /locations/
+ * Keystone 3.1: the hub is built first and carries real content. It lists only
+ * markets that HAVE a page; the rest are named as areaServed text so the coverage
+ * story is honest without generating thin pages (Keystone 6.3).
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AnswerBox from '../../components/AnswerBox.astro';
+import TrustStrip from '../../components/TrustStrip.astro';
+import LinkGrid from '../../components/LinkGrid.astro';
+import Faq from '../../components/Faq.astro';
+import Cta from '../../components/Cta.astro';
+import { getEntry, render } from 'astro:content';
+import { TERRITORY } from '../../data/business';
+import { activeTowns, townsInCounty } from '../../data/towns';
+import { buildIndex, townLinks, crumbs } from '../../lib/links';
+import { buildTitle, buildDescription } from '../../lib/seo';
+
+const ix = await buildIndex();
+const body = await getEntry('pages', 'locations');
+const rendered = body ? await render(body) : null;
+const Body = rendered?.Content;
+const fm = body?.data;
+
+const byCounty = TERRITORY.counties.map((c) => ({
+  county: c,
+  links: townLinks(ix, townsInCounty(c)),
+  /** Markets we cover but have not built a page for — named, not linked. */
+  unbuilt: townsInCounty(c)
+    .filter((t) => !ix.townSet.has(t.slug))
+    .map((t) => t.name),
+}));
+
+const quickAnswer =
+  fm?.quickAnswer ??
+  `Quality Konnection Construction works across the South Texas Gulf Coast, anchored in Brownsville, Port Isabel and South Padre Island. We cover Cameron County, Willacy County and eastern Hidalgo County for dirt work, site preparation and roofing on residential, commercial and industrial property.`;
+
+const faqs = fm?.faqs ?? [
+  { question: 'What area does Quality Konnection serve?', answer: `Cameron County, Willacy County and eastern Hidalgo County — anchored in ${TERRITORY.anchors.join(', ')}.` },
+  { question: 'Do you charge for travel to outlying communities?', answer: 'Travel is factored into the estimate rather than billed as a surprise line item. We tell you before the work starts, not after.' },
+  { question: 'Which markets need windstorm certification?', answer: 'Cameron and Willacy counties sit inside the Texas designated catastrophe area, so windstorm-compliant construction applies there. Hidalgo County does not, which changes the roofing spec conversation.' },
+  { question: 'Do soil conditions really change across the Valley?', answer: 'Substantially. Barrier-island sand on South Padre behaves nothing like Harlingen clay inland or the saline clays around the bay, and the fill and compaction plan changes with it.' },
+  { question: 'Do you work on the islands as well as the mainland?', answer: 'Yes. South Padre Island and Port Isabel are anchor markets, and coastal work carries its own assembly and corrosion specifications.' },
+  { question: 'Can you handle a project outside this area?', answer: 'Ask. We build inside our assigned territory by default so crews and schedules stay reliable, but we will tell you honestly whether a job outside it is a fit.' },
+];
+
+const title = buildTitle('Service Areas | Dirt Work & Roofing, South Texas');
+const description = buildDescription(
+  'Dirt work, site preparation and roofing across Brownsville, Port Isabel, South Padre Island, Harlingen and the South Texas Gulf Coast.',
+  'Find your city.'
+);
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  path="/locations/"
+  crumbs={crumbs.simple('Service Areas', '/locations/')}
+  quickAnswer={quickAnswer}
+  faqs={faqs}
+  kind="place"
+  areaName={TERRITORY.primaryCity}
+  areaLat={TERRITORY.centroid.lat}
+  areaLng={TERRITORY.centroid.lng}
+>
+  <div class="wrap section">
+    <p class="eyebrow">{TERRITORY.regionLabelLong}</p>
+    <h1>Where We Work</h1>
+    <AnswerBox answer={quickAnswer} />
+    <TrustStrip />
+
+    {Body && <div class="prose"><Body /></div>}
+
+    {
+      byCounty.map((c) => (
+        <>
+          <LinkGrid heading={c.county} links={c.links} />
+          {c.unbuilt.length > 0 && (
+            <p class="note">
+              We also serve {c.unbuilt.join(', ')} in {c.county}. Detailed pages for these
+              communities are in production — call or request an estimate in the meantime.
+            </p>
+          )}
+        </>
+      ))
+    }
+
+    <Faq items={faqs} />
+    <Cta market={TERRITORY.primaryCity} heading="Working somewhere on this list?" />
+  </div>
+</BaseLayout>

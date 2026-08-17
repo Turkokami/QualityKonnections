@@ -1,0 +1,140 @@
+---
+/**
+ * BASE LAYOUT — head, meta/OG/Twitter, canonical, schema injection, chrome.
+ *
+ * Keystone 5.3 (the JSON-LD injection trap): the graph is injected with `set:html`
+ * on a REAL <script type="application/ld+json"> element. Injecting it through a
+ * pseudo-element double-escapes the whole script and it renders as visible text.
+ * scripts/schema-validate.mjs parses the rendered output on every build to prove
+ * the graph is real, connected and node-complete.
+ *
+ * M7 is enforced here: every page gets the shared brand social image (as OG and
+ * Twitter image) and the logo (in Header and Footer). There is no way to render a
+ * page through this layout without both.
+ */
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import PhoneBar from '../components/PhoneBar.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { BUSINESS, BRAND_IMAGES } from '../data/business';
+import { buildGraph, abs, type Crumb, type FaqItem } from '../lib/schema';
+import { canonical } from '../lib/seo';
+
+interface Props {
+  title: string;
+  description: string;
+  path: string;
+  crumbs: Crumb[];
+  quickAnswer?: string;
+  faqs?: FaqItem[];
+  kind?: 'service' | 'article' | 'place' | 'casestudy' | 'page';
+  serviceName?: string;
+  serviceType?: string;
+  areaName?: string;
+  areaLat?: number;
+  areaLng?: number;
+  image?: string;
+  datePublished?: string;
+  dateModified?: string;
+  market?: string;
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description,
+  path,
+  crumbs,
+  quickAnswer,
+  faqs = [],
+  kind = 'page',
+  serviceName,
+  serviceType,
+  areaName,
+  areaLat,
+  areaLng,
+  image,
+  datePublished = '2026-08-17',
+  dateModified,
+  market,
+  noindex = false,
+} = Astro.props;
+
+const p = canonical(path);
+const canonicalUrl = abs(p);
+const ogImage = abs(image ?? BRAND_IMAGES.social.src);
+
+const jsonld = buildGraph({
+  path: p,
+  title,
+  description,
+  quickAnswer,
+  crumbs,
+  faqs,
+  kind,
+  serviceName,
+  serviceType,
+  areaName,
+  areaLat,
+  areaLng,
+  image,
+  datePublished,
+  dateModified,
+});
+---
+
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- M5: title ≤60, unique sitewide; description 110–165 ending on punctuation.
+         Both are validated across the full set by scripts/seo-audit.mjs. -->
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+    {noindex && <meta name="robots" content="noindex,follow" />}
+
+    <!-- M7: the shared brand social image on every page -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={BUSINESS.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content={String(BRAND_IMAGES.social.width)} />
+    <meta property="og:image:height" content={String(BRAND_IMAGES.social.height)} />
+    <meta property="og:image:alt" content={BRAND_IMAGES.social.alt} />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <!-- GEO signals (M2) -->
+    <meta name="geo.region" content="US-TX" />
+    {areaName && <meta name="geo.placename" content={areaName} />}
+    {areaLat && areaLng && <meta name="ICBM" content={`${areaLat}, ${areaLng}`} />}
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/images/brand/qk-mark.svg" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta name="theme-color" content="#16222E" />
+
+    <!-- Keystone 5.3: a directive on a REAL application/ld+json script element. -->
+    <script type="application/ld+json" is:inline set:html={jsonld} />
+  </head>
+
+  <body>
+    <a href="#main" class="visually-hidden">Skip to content</a>
+    <Header />
+    <Breadcrumbs crumbs={crumbs} />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+    <PhoneBar market={market} />
+  </body>
+</html>

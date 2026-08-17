@@ -1,0 +1,64 @@
+---
+/** T6 — LIBRARY PROFILE. /resources/{guide}/ Hung off a service spoke, never root-level. */
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AnswerBox from '../../components/AnswerBox.astro';
+import LinkGrid from '../../components/LinkGrid.astro';
+import ExpertBlock from '../../components/ExpertBlock.astro';
+import Faq from '../../components/Faq.astro';
+import Cta from '../../components/Cta.astro';
+import SourceNote from '../../components/SourceNote.astro';
+import { getCollection, render } from 'astro:content';
+import { getService } from '../../data/services';
+import { buildIndex, serviceLinks, libraryLinksFor, crumbs, url } from '../../lib/links';
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const entries = await getCollection('library', (e) => !e.data.draft);
+  return entries.map((entry) => ({ params: { guide: entry.id }, props: { entry } }));
+};
+
+const { entry } = Astro.props;
+const ix = await buildIndex();
+const { Content } = await render(entry);
+const d = entry.data;
+const svc = getService(d.parentService);
+
+const related = svc
+  ? libraryLinksFor(ix, svc.slug).filter((l) => l.href !== url.library(entry.id))
+  : [];
+---
+
+<BaseLayout
+  title={d.metaTitle}
+  description={d.metaDescription}
+  path={url.library(entry.id)}
+  crumbs={crumbs.child('Resources', '/resources/', d.title, url.library(entry.id))}
+  quickAnswer={d.quickAnswer}
+  faqs={d.faqs}
+  kind="article"
+  image={d.heroImage?.src}
+  datePublished={d.datePublished}
+  dateModified={d.dateModified}
+>
+  <div class="wrap-narrow section">
+    <p class="eyebrow"><a href="/resources/">Reference library</a></p>
+    <h1>{d.title}</h1>
+    <AnswerBox answer={d.quickAnswer} />
+    <ExpertBlock />
+    {
+      d.heroImage && (
+        <figure>
+          <img src={d.heroImage.src} alt={d.heroImage.alt} title={d.heroImage.title} width={d.heroImage.width} height={d.heroImage.height} loading="lazy" />
+          {d.heroImage.caption && <figcaption>{d.heroImage.caption}</figcaption>}
+        </figure>
+      )
+    }
+    <div class="prose"><Content /></div>
+    {svc && <p class="note">The service this hangs off: <a href={url.service(svc.slug)}>{svc.name}</a>.</p>}
+    <LinkGrid heading="Related reference" links={related} columns={false} />
+    <LinkGrid heading="Related services" links={serviceLinks(ix, svc ? [svc.slug, ...svc.siblings] : [])} />
+    <Faq items={d.faqs} />
+    <SourceNote sources={d.sources} reviewedDate={d.reviewedDate} />
+    <Cta service={svc?.name} />
+  </div>
+</BaseLayout>

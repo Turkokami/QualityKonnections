@@ -1,0 +1,70 @@
+---
+/**
+ * COMPLIANCE HUB — /compliance/
+ * Keystone 3.4 #5: "Enormous trust signal; almost no competitor builds it."
+ * On the Texas coast this is the single strongest blue-ocean cluster available.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AnswerBox from '../../components/AnswerBox.astro';
+import TrustStrip from '../../components/TrustStrip.astro';
+import LinkGrid from '../../components/LinkGrid.astro';
+import Faq from '../../components/Faq.astro';
+import Cta from '../../components/Cta.astro';
+import { getEntry, render } from 'astro:content';
+import { buildIndex, complianceLinks, serviceLinks, crumbs } from '../../lib/links';
+import { moneyServices } from '../../data/services';
+import { buildTitle, buildDescription } from '../../lib/seo';
+
+const ix = await buildIndex();
+const body = await getEntry('pages', 'compliance');
+const rendered = body ? await render(body) : null;
+const Body = rendered?.Content;
+const fm = body?.data;
+
+const quickAnswer =
+  fm?.quickAnswer ??
+  `Building on the South Texas coast means dealing with rules most of Texas never sees: windstorm certification in the designated catastrophe area, FEMA base flood elevations that set how high a pad must be, drainage-district approvals for anything that discharges water, and permits that differ city by city inside Cameron County.`;
+
+const faqs = fm?.faqs ?? [
+  { question: 'Does Quality Konnection issue windstorm certificates?', answer: 'No. We build to the certifiable specification and coordinate the inspection. The certificate is issued by TDI, an appointed qualified inspector or a licensed professional engineer — never by the contractor.' },
+  { question: 'Which counties are in the designated catastrophe area?', answer: 'Cameron and Willacy counties are inside it. Hidalgo County is not, which is why the roofing conversation changes at the county line.' },
+  { question: 'Do I need a permit for dirt work?', answer: 'Frequently, yes — especially floodplain development permits, drainage-district approvals and stormwater authorization on larger sites. Requirements differ by jurisdiction.' },
+  { question: 'Is this legal advice?', answer: 'No. These pages explain rules as of their stated review date so you know what questions to ask. Confirm current requirements with the issuing authority.' },
+  { question: 'Who pulls the permit, you or me?', answer: 'It depends on the jurisdiction and the scope, and we settle it in writing before work starts rather than assuming.' },
+  { question: 'How current is this information?', answer: 'Every compliance page carries a visible review date and links to its primary source so you can check it yourself.' },
+];
+
+const title = buildTitle('Codes, Permits & Windstorm Compliance | South TX');
+const description = buildDescription(
+  'Windstorm certification, TWIA requirements, FEMA flood elevation, drainage district rules and Cameron County permits explained for South Texas property owners.',
+  'Reviewed and sourced.'
+);
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  path="/compliance/"
+  crumbs={crumbs.simple('Codes & Compliance', '/compliance/')}
+  quickAnswer={quickAnswer}
+  faqs={faqs}
+  kind="article"
+>
+  <div class="wrap section">
+    <p class="eyebrow">Codes, permits &amp; compliance</p>
+    <h1>What the Rules Actually Require on the South Texas Coast</h1>
+    <AnswerBox answer={quickAnswer} />
+    <TrustStrip />
+    <p class="note">
+      These pages exist because the rules here genuinely change what a project costs
+      and how it is built. Each one states the rule, cites its primary source, and
+      carries a review date. None of them is legal advice, and none of them implies
+      that Quality Konnection issues certificates or makes regulatory determinations.
+    </p>
+    {Body && <div class="prose"><Body /></div>}
+    <LinkGrid heading="Compliance topics" links={complianceLinks(ix)} />
+    <LinkGrid heading="Services these rules govern" links={serviceLinks(ix, moneyServices().map((s) => s.slug))} />
+    <Faq items={faqs} />
+    <Cta heading="Not sure which rules apply to your property?" />
+  </div>
+</BaseLayout>

@@ -1,0 +1,81 @@
+---
+/**
+ * SERVICES HUB — /services/
+ * Keystone 3.3: ONE services hub, never two.
+ * Keystone 3.1: this hub gets real content, not a 558-word stub. It is the page
+ * that will accumulate the most inbound links on the site, and a hub audited by
+ * inbound-link count must earn them.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AnswerBox from '../../components/AnswerBox.astro';
+import TrustStrip from '../../components/TrustStrip.astro';
+import LinkGrid from '../../components/LinkGrid.astro';
+import ExpertBlock from '../../components/ExpertBlock.astro';
+import Faq from '../../components/Faq.astro';
+import Cta from '../../components/Cta.astro';
+import { getEntry, render } from 'astro:content';
+import { TERRITORY } from '../../data/business';
+import { DIVISIONS, byDivision } from '../../data/services';
+import { buildIndex, serviceLinks, verticalLinks, townLinks, crumbs } from '../../lib/links';
+import { anchorTowns } from '../../data/towns';
+import { buildTitle, buildDescription } from '../../lib/seo';
+
+const ix = await buildIndex();
+const body = await getEntry('pages', 'services');
+const rendered = body ? await render(body) : null;
+const Body = rendered?.Content;
+const fm = body?.data;
+
+const dirt = serviceLinks(ix, byDivision('dirt-work').map((s) => s.slug));
+const roof = serviceLinks(ix, byDivision('roofing').map((s) => s.slug));
+
+const quickAnswer =
+  fm?.quickAnswer ??
+  `Quality Konnection Construction offers two service divisions across the South Texas Gulf Coast: dirt work and site preparation, covering clearing, pads, grading, drainage and commercial site development; and complete roofing, covering shingle, standing seam and R-panel metal, TPO, modified bitumen, repairs and storm damage.`;
+
+const faqs = fm?.faqs ?? [
+  { question: 'What are the two service divisions?', answer: 'Dirt work and site preparation, and complete roofing solutions. Both serve residential, commercial and industrial projects.' },
+  { question: 'Do you do dirt work and roofing on the same project?', answer: 'Often, yes. On a new build we can handle the pad and the roof, which removes a handoff between two contractors and keeps one schedule.' },
+  { question: 'What is the largest earthwork job you take on?', answer: 'Commercial and industrial site development, including large-scale earthmoving where thousands of yards of material move across a site.' },
+  { question: 'Which roofing systems do you install?', answer: 'Asphalt shingle, standing seam metal, R-panel and exposed-fastener metal, flat and low-slope systems including TPO and modified bitumen, plus repairs, decking and flashing work.' },
+  { question: 'Do you do small repairs, or only full replacements?', answer: 'Both. Leak detection, flashing repair and storm damage repair are core services, not afterthoughts to a replacement pitch.' },
+  { question: 'Do you work outside Cameron County?', answer: `Yes — we work across ${TERRITORY.counties.join(', ')} and the surrounding Gulf Coast communities.` },
+];
+
+const title = buildTitle('Dirt Work & Roofing Services | South Texas');
+const description = buildDescription(
+  'Site preparation, building pads, grading, drainage and complete residential and commercial roofing across the South Texas Gulf Coast.',
+  'See every service and request an estimate.'
+);
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  path="/services/"
+  crumbs={crumbs.simple('Services', '/services/')}
+  quickAnswer={quickAnswer}
+  faqs={faqs}
+  kind="service"
+  serviceName="Dirt work, site preparation and roofing"
+  serviceType="Construction services"
+>
+  <div class="wrap section">
+    <p class="eyebrow">What we do</p>
+    <h1>Dirt Work &amp; Roofing Services</h1>
+    <AnswerBox question="Our services at a glance" answer={quickAnswer} />
+    <TrustStrip />
+
+    <LinkGrid heading={DIVISIONS['dirt-work'].name} intro={DIVISIONS['dirt-work'].blurb} links={dirt} />
+    <LinkGrid heading={DIVISIONS.roofing.name} intro={DIVISIONS.roofing.blurb} links={roof} />
+
+    <ExpertBlock />
+    {Body && <div class="prose"><Body /></div>}
+
+    <LinkGrid heading="Commercial &amp; industrial" links={verticalLinks(ix)} />
+    <LinkGrid heading="Service areas" links={townLinks(ix, anchorTowns())} />
+
+    <Faq items={faqs} />
+    <Cta heading="Not sure which service you need?" />
+  </div>
+</BaseLayout>

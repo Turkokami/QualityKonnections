@@ -1,0 +1,63 @@
+---
+/** COMMERCIAL HUB — /commercial/ . Keystone 3.1: hub first, with real content. */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AnswerBox from '../../components/AnswerBox.astro';
+import TrustStrip from '../../components/TrustStrip.astro';
+import LinkGrid from '../../components/LinkGrid.astro';
+import Faq from '../../components/Faq.astro';
+import Cta from '../../components/Cta.astro';
+import { getEntry, render } from 'astro:content';
+import { buildIndex, verticalLinks, serviceLinks, complianceLinks, crumbs } from '../../lib/links';
+import { moneyServices } from '../../data/services';
+import { buildTitle, buildDescription } from '../../lib/seo';
+
+const ix = await buildIndex();
+const body = await getEntry('pages', 'commercial');
+const rendered = body ? await render(body) : null;
+const Body = rendered?.Content;
+const fm = body?.data;
+
+const quickAnswer =
+  fm?.quickAnswer ??
+  `Quality Konnection Construction handles commercial and industrial work on both sides of the building: full site development from clearing to final grade, and commercial roof systems including standing seam metal, R-panel, TPO and modified bitumen. We work for owners, property managers, builders and general contractors across South Texas.`;
+
+const faqs = fm?.faqs ?? [
+  { question: 'Do you work as a subcontractor for general contractors?', answer: 'Yes. Sitework and new-construction roofing are both offered as subcontract scopes, and schedule reliability is treated as part of the deliverable.' },
+  { question: 'Can you reroof a building that stays open?', answer: 'Yes. Occupied reroofing is phased and sequenced so the tenant keeps operating, with dry-in maintained at the end of every work day.' },
+  { question: 'Do you provide documentation for insurers and lenders?', answer: 'We document the assembly, the materials and the inspections performed on the project. Certificates issued by third parties come from those third parties, not from us.' },
+  { question: 'What size site work do you take on?', answer: 'From a single commercial pad to large-scale earthmoving across an industrial site with thousands of yards of material.' },
+  { question: 'Do you carry commercial insurance?', answer: 'Yes, and a certificate of insurance is available on request before work begins.' },
+  { question: 'How do you handle change orders?', answer: 'In writing, before the work happens. Unforeseen conditions get priced and approved rather than absorbed and argued about later.' },
+];
+
+const title = buildTitle('Commercial & Industrial Construction | South TX');
+const description = buildDescription(
+  'Commercial site development and roof systems for warehouses, retail, multifamily, agricultural and industrial property across the South Texas Gulf Coast.',
+  'Request a bid.'
+);
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  path="/commercial/"
+  crumbs={crumbs.simple('Commercial', '/commercial/')}
+  quickAnswer={quickAnswer}
+  faqs={faqs}
+  kind="service"
+  serviceName="Commercial and industrial construction services"
+  serviceType="Commercial construction"
+>
+  <div class="wrap section">
+    <p class="eyebrow">Commercial &amp; industrial</p>
+    <h1>Commercial Site Work &amp; Roofing</h1>
+    <AnswerBox answer={quickAnswer} />
+    <TrustStrip />
+    {Body && <div class="prose"><Body /></div>}
+    <LinkGrid heading="Property types we work on" links={verticalLinks(ix)} />
+    <LinkGrid heading="Commercial services" links={serviceLinks(ix, moneyServices().map((s) => s.slug))} />
+    <LinkGrid heading="Codes, permits and compliance" links={complianceLinks(ix)} columns={false} />
+    <Faq items={faqs} />
+    <Cta heading="Bidding a commercial project?" />
+  </div>
+</BaseLayout>

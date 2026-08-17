@@ -1,0 +1,74 @@
+---
+/**
+ * RESOURCE LIBRARY HUB — /resources/
+ * Keystone 3.4 #7: the topical-authority backbone. Structured profiles per roof
+ * system, soil and material, hung off the service tree — never a chronological dump.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AnswerBox from '../../components/AnswerBox.astro';
+import LinkGrid from '../../components/LinkGrid.astro';
+import Faq from '../../components/Faq.astro';
+import Cta from '../../components/Cta.astro';
+import { getEntry, render } from 'astro:content';
+import { buildIndex, crumbs, url } from '../../lib/links';
+import { buildTitle, buildDescription } from '../../lib/seo';
+
+const ix = await buildIndex();
+const body = await getEntry('pages', 'resources');
+const rendered = body ? await render(body) : null;
+const Body = rendered?.Content;
+const fm = body?.data;
+
+const CATS = [
+  { key: 'roof-system', label: 'Roof systems', intro: 'What each system is, where it belongs, and how it fails.' },
+  { key: 'soil-and-material', label: 'Soils & fill materials', intro: 'What is actually under the Valley, and what to build with.' },
+  { key: 'method', label: 'Methods & specifications', intro: 'How the work is done, and what "done right" means in practice.' },
+  { key: 'equipment', label: 'Equipment', intro: 'What each machine is for, and why it matters to your schedule.' },
+] as const;
+
+const groups = CATS.map((c) => ({
+  ...c,
+  links: ix.library
+    .filter((l) => l.data.category === c.key)
+    .map((l) => ({ href: url.library(l.id), label: l.data.title })),
+}));
+
+const quickAnswer =
+  fm?.quickAnswer ??
+  `This library is a plain-English reference for the materials and methods behind a South Texas construction project: what each roof system is and where it belongs, what the region's clay, caliche and coastal sands do under load, and what the specifications on your plans actually mean.`;
+
+const faqs = fm?.faqs ?? [
+  { question: 'Who is this library for?', answer: 'Property owners, builders and facility managers who want to understand the decisions in their project rather than just accept them.' },
+  { question: 'Is this a sales pitch?', answer: 'No. Each entry covers what a system or material is good at and where it fails, including the cases where it is the wrong choice.' },
+  { question: 'How does this relate to the service pages?', answer: 'Every library entry hangs off a service spoke and links to it, so you can go from the reference straight to the work.' },
+  { question: 'Do you install everything described here?', answer: 'We install the roof systems described. Some soil and material entries are reference-only for context.' },
+  { question: 'How often is this updated?', answer: 'Entries carry a published and modified date, and are revised as codes and manufacturer specifications change.' },
+  { question: 'Can you specify a system for my building?', answer: 'Yes. That is what a site walk is for — the right system depends on slope, exposure, wind zone and how you use the building.' },
+];
+
+const title = buildTitle('Roofing & Site Work Reference Library | South TX');
+const description = buildDescription(
+  'Plain-English reference on roof systems, Valley soils, fill materials and construction methods for South Texas property owners and builders.',
+  'Browse the library.'
+);
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  path="/resources/"
+  crumbs={crumbs.simple('Resources', '/resources/')}
+  quickAnswer={quickAnswer}
+  faqs={faqs}
+  kind="article"
+>
+  <div class="wrap section">
+    <p class="eyebrow">Reference library</p>
+    <h1>Roof Systems, Valley Soils &amp; How the Work Is Done</h1>
+    <AnswerBox answer={quickAnswer} />
+    {Body && <div class="prose"><Body /></div>}
+    {groups.map((g) => <LinkGrid heading={g.label} intro={g.intro} links={g.links} />)}
+    <Faq items={faqs} />
+    <Cta heading="Want this applied to your building?" />
+  </div>
+</BaseLayout>

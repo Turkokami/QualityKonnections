@@ -1,0 +1,175 @@
+---
+/**
+ * Two page types share this URL level, exactly as the Keystone taxonomy specifies:
+ *   T5 — NEIGHBORHOOD  /locations/{city}/{neighborhood}/
+ *   city × service     /locations/{city}/{service}/
+ *
+ * They are enumerated from two different collections into ONE route so a slug can
+ * never be claimed twice. A collision is a hard build error rather than a silent
+ * duplicate URL — Keystone 12.1 lists cannibalization as the #1 recurring killer,
+ * and two pages at one path is the purest form of it.
+ */
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import AnswerBox from '../../../components/AnswerBox.astro';
+import TrustStrip from '../../../components/TrustStrip.astro';
+import LinkGrid from '../../../components/LinkGrid.astro';
+import ExpertBlock from '../../../components/ExpertBlock.astro';
+import Faq from '../../../components/Faq.astro';
+import Cta from '../../../components/Cta.astro';
+import SourceNote from '../../../components/SourceNote.astro';
+import { getCollection, render } from 'astro:content';
+import { getTown } from '../../../data/towns';
+import { getService } from '../../../data/services';
+import {
+  buildIndex,
+  matrixLinks,
+  neighborhoodLinks,
+  siblingTownLinks,
+  serviceLinks,
+  crumbs,
+  url,
+} from '../../../lib/links';
+import { windZoneSentence, soilSentence } from '../../../lib/geo';
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const [matrix, hoods] = await Promise.all([
+    getCollection('matrix', (e) => !e.data.draft),
+    getCollection('neighborhoods', (e) => !e.data.draft),
+  ]);
+
+  const paths: { params: { town: string; child: string }; props: any }[] = [];
+  const seen = new Set<string>();
+  const claim = (town: string, child: string, what: string) => {
+    const key = `${town}/${child}`;
+    if (seen.has(key)) {
+      throw new Error(
+        `URL collision at /locations/${key}/ — two pages claim it (${what}). ` +
+          `Rename one slug; a duplicate URL is cannibalization by construction.`
+      );
+    }
+    seen.add(key);
+  };
+
+  for (const entry of matrix) {
+    const t = getTown(entry.data.town);
+    const s = getService(entry.data.service);
+    if (!t || t.deferred || !s) continue;
+    claim(t.slug, s.slug, 'city×service');
+    paths.push({
+      params: { town: t.slug, child: s.slug },
+      props: { entry, type: 'matrix' as const },
+    });
+  }
+
+  for (const entry of hoods) {
+    const t = getTown(entry.data.town);
+    if (!t || t.deferred) continue;
+    claim(t.slug, entry.data.neighborhood, 'neighborhood');
+    paths.push({
+      params: { town: t.slug, child: entry.data.neighborhood },
+      props: { entry, type: 'neighborhood' as const },
+    });
+  }
+
+  return paths;
+};
+
+const { entry, type } = Astro.props;
+const town = getTown(entry.data.town);
+if (!town) throw new Error(`Unknown town: ${entry.data.town}`);
+
+const ix = await buildIndex();
+const { Content } = await render(entry as any);
+const d = entry.data as any;
+
+const svc = type === 'matrix' ? getService(d.service) : undefined;
+const hood =
+  type === 'neighborhood'
+    ? (town.neighborhoods ?? []).find((n) => n.slug === d.neighborhood)
+    : undefined;
+
+const path =
+  type === 'matrix'
+    ? url.matrix(town.slug, d.service)
+    : url.neighborhood(town.slug, d.neighborhood);
+
+const crumbList =
+  type === 'matrix' && svc
+    ? crumbs.matrix(town, svc)
+    : crumbs.neighborhood(town, d.title, d.neighborhood);
+
+const otherMatrix = matrixLinks(ix, town).filter((l) => l.href !== path);
+const otherHoods = neighborhoodLinks(ix, town).filter((l) => l.href !== path);
+const siblings = siblingTownLinks(ix, town, 5);
+const relatedServices = svc ? serviceLinks(ix, svc.siblings) : serviceLinks(ix, []);
+---
+
+<BaseLayout
+  title={d.metaTitle}
+  description={d.metaDescription}
+  path={path}
+  crumbs={crumbList}
+  quickAnswer={d.quickAnswer}
+  faqs={d.faqs}
+  kind={type === 'matrix' ? 'service' : 'place'}
+  serviceName={svc ? `${svc.name} in ${town.name}, TX` : `Dirt Work & Roofing in ${d.title}`}
+  serviceType={svc?.serviceType}
+  areaName={town.name}
+  areaLat={town.lat}
+  areaLng={town.lng}
+  market={town.name}
+  image={d.heroImage?.src}
+  datePublished={d.datePublished}
+  dateModified={d.dateModified}
+>
+  <div class="wrap section">
+    <p class="eyebrow">
+      <a href={url.town(town.slug)}>{town.name}</a> · {town.county}
+    </p>
+    <h1>{d.title}</h1>
+
+    <AnswerBox answer={d.quickAnswer} />
+    <TrustStrip market={town.name} />
+
+    {
+      type === 'neighborhood' && hood && (
+        <p class="lede">{hood.note}</p>
+      )
+    }
+
+    <section aria-labelledby="conditions">
+      <h2 id="conditions">Conditions here</h2>
+      <p>{soilSentence(town)}</p>
+      {svc?.division === 'roofing' && <p>{windZoneSentence(town)}</p>}
+      {svc?.division !== 'roofing' && <p>{town.floodContext}</p>}
+    </section>
+
+    <ExpertBlock />
+
+    {
+      d.heroImage && (
+        <figure>
+          <img src={d.heroImage.src} alt={d.heroImage.alt} title={d.heroImage.title} width={d.heroImage.width} height={d.heroImage.height} loading="lazy" />
+          {d.heroImage.caption && <figcaption>{d.heroImage.caption}</figcaption>}
+        </figure>
+      )
+    }
+
+    <div class="prose"><Content /></div>
+
+    <p class="note">
+      This page covers {type === 'matrix' && svc ? `${svc.navLabel.toLowerCase()} specifically` : 'this area specifically'}.
+      For everything we do in this market, see <a href={url.town(town.slug)}>{town.name}</a>.
+      {svc && <> For the service in full, see <a href={url.service(svc.slug)}>{svc.name}</a>.</>}
+    </p>
+
+    <LinkGrid heading={`More in ${town.name}`} links={[...otherMatrix, ...otherHoods]} columns={false} />
+    <LinkGrid heading="Related services" links={relatedServices} />
+    <LinkGrid heading="Nearby communities" links={siblings} columns={false} />
+
+    <Faq items={d.faqs} />
+    <SourceNote sources={d.sources} reviewedDate={d.reviewedDate} />
+    <Cta market={town.name} service={svc?.name} />
+  </div>
+</BaseLayout>

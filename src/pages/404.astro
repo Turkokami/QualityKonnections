@@ -1,0 +1,26 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import LinkGrid from '../components/LinkGrid.astro';
+import Cta from '../components/Cta.astro';
+import { buildIndex, serviceLinks, townLinks, crumbs } from '../lib/links';
+import { moneyServices } from '../data/services';
+import { anchorTowns } from '../data/towns';
+
+const ix = await buildIndex();
+---
+
+<BaseLayout
+  title="Page not found | Quality Konnection Construction"
+  description="That page does not exist. Here are the dirt work and roofing services and service areas Quality Konnection Construction covers across South Texas."
+  path="/404/"
+  crumbs={crumbs.simple('Not found', '/404/')}
+  noindex={true}
+>
+  <div class="wrap-narrow section">
+    <h1>That page isn’t here</h1>
+    <p class="lede">The link may be old, or the page may have moved. Here is where to go instead.</p>
+    <LinkGrid heading="Services" links={serviceLinks(ix, moneyServices().map((s) => s.slug))} />
+    <LinkGrid heading="Service areas" links={townLinks(ix, anchorTowns())} columns={false} />
+    <Cta heading="Looking for something specific?" />
+  </div>
+</BaseLayout>

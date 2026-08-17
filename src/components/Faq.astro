@@ -1,0 +1,29 @@
+---
+/**
+ * BLOCK 5 — the FAQ block. EXACTLY ONE per URL (Keystone 4.1, 9.1).
+ * The FAQPage schema node is built from THIS SAME ARRAY in the page frontmatter,
+ * so the visible block and the markup can never drift apart.
+ * `.faq-speakable` is the second M4 Speakable target.
+ */
+interface Props {
+  items: { question: string; answer: string }[];
+  heading?: string;
+}
+const { items, heading = 'Frequently asked questions' } = Astro.props;
+---
+
+{
+  items.length > 0 && (
+    <section class="faq-speakable" aria-labelledby="faq-heading">
+      <h2 id="faq-heading">{heading}</h2>
+      <div class="faq">
+        {items.map((f, i) => (
+          <details open={i === 0}>
+            <summary>{f.question}</summary>
+            <div class="faq-a"><p>{f.answer}</p></div>
+          </details>
+        ))}
+      </div>
+    </section>
+  )
+}

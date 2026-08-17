@@ -1,0 +1,72 @@
+---
+/**
+ * CASE STUDY HUB — /case-studies/
+ * Keystone T9: "the highest-trust, most citation-friendly asset in the system,
+ * and the one most often missing." Wired into service spokes, city pages and the
+ * hub — a case study is simultaneously a geo page, a service page and a proof asset.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AnswerBox from '../../components/AnswerBox.astro';
+import LinkGrid from '../../components/LinkGrid.astro';
+import Faq from '../../components/Faq.astro';
+import Cta from '../../components/Cta.astro';
+import { buildIndex, crumbs, url } from '../../lib/links';
+import { getTown } from '../../data/towns';
+import { getService } from '../../data/services';
+import { buildTitle, buildDescription } from '../../lib/seo';
+
+const ix = await buildIndex();
+const links = ix.casestudies.map((c) => {
+  const t = getTown(c.data.town);
+  const s = getService(c.data.service);
+  return {
+    href: url.caseStudy(c.id),
+    label: c.data.title,
+    note: [s?.navLabel, t?.name, c.data.propertyType].filter(Boolean).join(' · '),
+  };
+});
+
+const quickAnswer = `These are real projects from the South Texas Gulf Coast, written up with the property type, the neighborhood, the conditions we found, the method we used and what the outcome was. No client is named without written permission, and no numbers are estimated.`;
+
+const faqs = [
+  { question: 'Are these real projects?', answer: 'Yes. Every case study describes work actually performed, and no figure in one is estimated or reconstructed.' },
+  { question: 'Why are some clients not named?', answer: 'Because we do not publish a client name, address or photograph of an identifiable property without written permission.' },
+  { question: 'Can I see a project near me?', answer: 'Case studies are linked from the city page for the market they were performed in, so start there.' },
+  { question: 'Do you have references?', answer: 'Yes. References are provided on request for a project of comparable type and scale.' },
+  { question: 'Can I visit a completed job?', answer: 'Sometimes, with the owner’s permission. Ask and we will find out.' },
+  { question: 'What if my project is nothing like these?', answer: 'That is normal. Case studies show the approach, not a menu — call and describe what you have.' },
+];
+
+const title = buildTitle('Project Case Studies | Dirt Work & Roofing');
+const description = buildDescription(
+  'Real dirt work and roofing projects across Brownsville, Port Isabel, South Padre Island and the South Texas Gulf Coast, with the method and the outcome.',
+  'See the work.'
+);
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  path="/case-studies/"
+  crumbs={crumbs.simple('Case Studies', '/case-studies/')}
+  quickAnswer={quickAnswer}
+  faqs={faqs}
+  kind="article"
+>
+  <div class="wrap section">
+    <p class="eyebrow">Proof</p>
+    <h1>Project Case Studies</h1>
+    <AnswerBox answer={quickAnswer} />
+    <LinkGrid heading="Completed projects" links={links} />
+    {
+      links.length === 0 && (
+        <p class="note">
+          Case studies are documented as projects complete and the owner approves
+          publication. Nothing is posted here that has not been performed and cleared.
+        </p>
+      )
+    }
+    <Faq items={faqs} />
+    <Cta heading="Want a project like one of these?" />
+  </div>
+</BaseLayout>

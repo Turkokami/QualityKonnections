@@ -1,0 +1,28 @@
+---
+/**
+ * Visible breadcrumb. Must mirror the URL taxonomy exactly and match the
+ * BreadcrumbList node built from the same array (Keystone 5.1 node 7, 9.1).
+ */
+interface Props {
+  crumbs: { name: string; url: string }[];
+}
+const { crumbs } = Astro.props;
+---
+
+<nav class="crumbs" aria-label="Breadcrumb">
+  <div class="wrap">
+    <ol>
+      {
+        crumbs.map((c, i) => (
+          <li>
+            {i === crumbs.length - 1 ? (
+              <span aria-current="page">{c.name}</span>
+            ) : (
+              <a href={c.url}>{c.name}</a>
+            )}
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</nav>

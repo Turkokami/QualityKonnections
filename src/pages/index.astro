@@ -1,0 +1,148 @@
+---
+/**
+ * T1 — HOME / HUB.
+ * Keystone 3.1 cardinal rule: build the hub with REAL content before the spokes.
+ * This route renders the hub chrome and pulls its 3,000–5,000-word body from
+ * src/content/pages/home.md when it exists (M1). The harness flags it until it does.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import AnswerBox from '../components/AnswerBox.astro';
+import TrustStrip from '../components/TrustStrip.astro';
+import LinkGrid from '../components/LinkGrid.astro';
+import ExpertBlock from '../components/ExpertBlock.astro';
+import Faq from '../components/Faq.astro';
+import Cta from '../components/Cta.astro';
+import { getEntry, render } from 'astro:content';
+import { BUSINESS, TERRITORY, has } from '../data/business';
+import { DIVISIONS, byDivision } from '../data/services';
+import { anchorTowns, pageTowns } from '../data/towns';
+import {
+  buildIndex,
+  serviceLinks,
+  townLinks,
+  verticalLinks,
+  complianceLinks,
+  url,
+} from '../lib/links';
+import { buildTitle, buildDescription } from '../lib/seo';
+
+const ix = await buildIndex();
+const body = await getEntry('pages', 'home');
+const rendered = body ? await render(body) : null;
+const Body = rendered?.Content;
+
+const dirt = serviceLinks(ix, byDivision('dirt-work').map((s) => s.slug));
+const roof = serviceLinks(ix, byDivision('roofing').map((s) => s.slug));
+const anchors = townLinks(ix, anchorTowns());
+const allTowns = townLinks(ix, pageTowns());
+const verticals = verticalLinks(ix);
+const compliance = complianceLinks(ix);
+
+const fm = body?.data;
+
+const quickAnswer =
+  fm?.quickAnswer ??
+  `Quality Konnection Construction is a South Texas contractor handling both sides of a build: the dirt work underneath it and the roof over it. We prepare and grade sites, build and compact pads, and install and repair residential and commercial roofs across Brownsville, Port Isabel, South Padre Island and the surrounding Gulf Coast.`;
+
+const faqs = fm?.faqs ?? [
+  {
+    question: 'What does Quality Konnection Construction do?',
+    answer:
+      'Two things, and both to the same standard: dirt work and site preparation, and complete roofing. That covers everything from a residential building pad to large-scale commercial earthwork, and from a shingle repair to a full commercial membrane replacement.',
+  },
+  {
+    question: 'Where does Quality Konnection work?',
+    answer: `We work across ${TERRITORY.regionLabelLong}, anchored in ${TERRITORY.anchors.join(', ')} and the surrounding communities of ${TERRITORY.counties.join(', ')}.`,
+  },
+  {
+    question: 'Do you handle both residential and commercial projects?',
+    answer:
+      'Yes. The company is built around residential, commercial and industrial work, and the same crews and standards apply to a single-family pad and to an industrial site package.',
+  },
+  {
+    question: 'Are you the cheapest contractor?',
+    answer:
+      'No, and we do not try to be. Construction and roofing are areas where cutting corners becomes expensive later. We compete on proper installation, dependable materials, experienced crews and standing behind the work.',
+  },
+  {
+    question: 'Can one contractor really do both dirt work and roofing?',
+    answer:
+      'That is the point of the company. One contractor covering the ground under the building and the roof over it means one point of accountability and one schedule to manage instead of two.',
+  },
+  {
+    question: 'How do I get an estimate?',
+    answer:
+      'Tell us the project and the address. We walk the site, look at what the ground and the roof actually need, and put the scope and the number in writing before anything starts.',
+  },
+];
+
+const title = buildTitle('Dirt Work & Roofing Contractor | Brownsville TX');
+const description = buildDescription(
+  'Dirt work, site preparation and complete roofing for residential, commercial and industrial projects across Brownsville and the South Texas Gulf Coast.',
+  'Request a free estimate.'
+);
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  path="/"
+  crumbs={[{ name: 'Home', url: '/' }]}
+  quickAnswer={quickAnswer}
+  faqs={faqs}
+  kind="page"
+  areaName={TERRITORY.primaryCity}
+  areaLat={TERRITORY.centroid.lat}
+  areaLng={TERRITORY.centroid.lng}
+>
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow">{TERRITORY.regionLabelLong}</p>
+      <h1>Dirt Work. Roofing. Done Right.</h1>
+      <p class="lede">{BUSINESS.positioning}</p>
+      <div class="cta-actions">
+        {
+          has(BUSINESS.phoneE164) && has(BUSINESS.phoneDisplay) && (
+            <a class="btn btn-primary" href={`tel:${BUSINESS.phoneE164}`}>Call {BUSINESS.phoneDisplay}</a>
+          )
+        }
+        <a class="btn btn-primary" href={url.contact()}>Get a free estimate</a>
+        <a class="btn btn-on-dark" href={url.servicesHub()}>See what we do</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <TrustStrip />
+  </div>
+
+  <div class="wrap section">
+    <AnswerBox question="What Quality Konnection does" answer={quickAnswer} />
+
+    <LinkGrid
+      heading={DIVISIONS['dirt-work'].name}
+      intro={DIVISIONS['dirt-work'].blurb}
+      links={dirt}
+    />
+    <LinkGrid
+      heading={DIVISIONS.roofing.name}
+      intro={DIVISIONS.roofing.blurb}
+      links={roof}
+    />
+
+    <ExpertBlock />
+
+    {Body && <div class="prose"><Body /></div>}
+
+    <LinkGrid
+      heading="Where we work"
+      intro={`Anchored in ${TERRITORY.anchors.join(', ')} and working across ${TERRITORY.counties.join(', ')}.`}
+      links={anchors.length ? anchors : allTowns}
+    />
+    <LinkGrid heading="Commercial &amp; industrial" links={verticals} />
+    <LinkGrid heading="Codes, permits and windstorm compliance" links={compliance} />
+
+    <Faq items={faqs} />
+    <Cta market={TERRITORY.primaryCity} heading="Ready to talk about your project?" />
+  </div>
+</BaseLayout>

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" width="320" height="80" role="img" aria-label="Quality Konnection Construction">
+  <rect width="320" height="80" fill="none"/>
+  <g fill="#E1651C"><path d="M8 54h30v10H8z"/><path d="M8 40h30v10H8z" opacity=".65"/></g>
+  <g font-family="Archivo Black, Helvetica Neue, Arial, sans-serif" fill="#FFFFFF">
+    <text x="48" y="38" font-size="25" font-weight="800" letter-spacing="-.6">QUALITY KONNECTION</text>
+    <text x="48" y="62" font-size="14" font-weight="700" letter-spacing="4.2" fill="#E1651C">CONSTRUCTION</text>
+  </g>
+</svg>

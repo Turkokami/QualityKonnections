@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Quality Konnection Construction">
+  <rect width="64" height="64" rx="6" fill="#16222E"/>
+  <path d="M12 20 32 10l20 10-20 8z" fill="#E1651C"/>
+  <rect x="10" y="40" width="44" height="7" fill="#E1651C"/>
+  <rect x="10" y="50" width="44" height="5" fill="#E1651C" opacity=".55"/>
+</svg>
