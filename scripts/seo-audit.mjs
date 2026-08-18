@@ -30,6 +30,13 @@ const ALLOWED_SHARED_H2 = new Set([
   'markets where this bites hardest',
   'other compliance topics',
   'want this handled correctly the first time?',
+  // Emitted by services/[service]/index.astro on every T2 spoke. Same category:
+  // LinkGrid headings, not body copy. The "{navLabel} by city" grid varies per
+  // page so it cannot cannibalize and is not listed.
+  'common problems we solve',
+  'reference & materials',
+  'project case studies',
+  'related services',
 ]);
 
 export function run() {
