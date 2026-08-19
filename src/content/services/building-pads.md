@@ -158,7 +158,7 @@ Clearing and stripping of unsuitable surface material. Then placement: material 
 
 Final grading shapes the pad and the surrounding ground so water leaves the way the design intends. Then documentation: test results, elevations, and an as-built record.
 
-## What drives the price?
+## What makes one pad cost more than another?
 
 Volume, distance, specification and access, in roughly that order.
 
@@ -172,7 +172,7 @@ Access determines method. Infill lots, occupied commercial sites and constrained
 
 Then site conditions: what has to be stripped, whether the existing material can be reused, and how wet the ground is when the work happens. Clay this heavy does not work in the days after real rain, and a programme assuming continuous dry working will slip.
 
-## What goes wrong, and how is it prevented?
+## How does a pad fail, and what stops it?
 
 Four failure modes, and none of them is exotic.
 

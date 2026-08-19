@@ -179,7 +179,7 @@ The system goes down in order, with drainage components set correctly, and every
 
 Inspection has to happen while the assembly is still observable, so it is scheduled into the sequence rather than after it. Then close-out: certificate where applicable, permit records, manufacturer documentation for what was installed, and warranty registration actually completed.
 
-## What drives the price?
+## Where does the money go on a low-slope roof?
 
 Six things, and area is only one of them.
 
@@ -197,7 +197,7 @@ And the compliance track: filing, inspection coordination and the specification 
 
 Competing on price is not what this business does, and low-slope work is where that shows most clearly. What we commit to is a scope specific enough that there is nothing left to revise once the roof is open.
 
-## What goes wrong, and how is it prevented?
+## Where do low-slope roofs actually leak?
 
 Five failure modes, and none of them is the membrane failing in the field.
 

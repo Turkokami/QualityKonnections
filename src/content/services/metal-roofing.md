@@ -218,7 +218,7 @@ Then panels, clips or fasteners, followed by trim, flashings, closures and penet
 
 Close-out delivers the documents: the certificate where applicable, permit records, manufacturer paperwork for what was actually installed, and warranty registration completed rather than assumed.
 
-## What drives the price?
+## What moves the number on a metal roof?
 
 Six things, and none of them is a number we will publish without seeing the roof.
 
@@ -234,9 +234,9 @@ Access and panel length, because long panels need somewhere to be handled and li
 
 And the compliance track, meaning filing, inspection coordination and the specification needed to pass it.
 
-We are not the cheapest and do not try to be. What we commit to is a scope written specifically enough that the number at the end matches the number at the start.
+Competing on the lowest number is not what this business does. What it commits to is a scope written specifically enough that the figure at the end matches the figure at the start.
 
-## What goes wrong, and how is it prevented?
+## Which metal roof failures are avoidable?
 
 Five failure modes, all specified out rather than worked around.
 
