@@ -12,6 +12,7 @@
  * Twitter image) and the logo (in Header and Footer). There is no way to render a
  * page through this layout without both.
  */
+import SpeedInsights from '@vercel/speed-insights/astro';
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
@@ -125,6 +126,8 @@ const jsonld = buildGraph({
 
     <!-- Keystone 5.3: a directive on a REAL application/ld+json script element. -->
     <script type="application/ld+json" is:inline set:html={jsonld} />
+    {/* Vercel Speed Insights (free tier): first-party page-speed readings, cookieless. */}
+    <SpeedInsights />
   </head>
 
   <body>
